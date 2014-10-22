@@ -90,8 +90,9 @@ void ImageViewerPrivate::setImage(Image* i) {
             img->getMovie()->stop();
             q->disconnect(img->getMovie(), SIGNAL(frameChanged(int)), q, SLOT(onAnimation()));
         }
-//         delete img;
-//         img = NULL;
+        img->setInUse(false); //bye-bye
+        //delete img;
+        //img = NULL;
     }
 
     if(i->getType()==NONE) {
@@ -137,10 +138,8 @@ void ImageViewerPrivate::smoothScale() {
     lock++;
     Sleeper::msleep(100); //unicorn magic. prevents some bad things
     if(lock == 1) {
-        qDebug() << "enter";
         imageScaled = image.scaled(drawingRect.size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation); //SLOW
         q->update();
-        qDebug() << "quit";
     }
     lock--;
 }

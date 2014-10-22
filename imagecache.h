@@ -10,7 +10,8 @@ public:
     ImageCache();
     ~ImageCache();
     Image* findImagePointer(Image* image);
-    void pushImage(Image* image);
+    bool imageIsCached(Image*);
+    bool pushImage(Image* image);
     qint64 cacheSize() const;
 private:
     QVector<Image*> cachedImages;

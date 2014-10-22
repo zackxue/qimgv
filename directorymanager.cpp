@@ -51,24 +51,39 @@ void DirectoryManager::setFilePositions() {
     }
 }
 
+FileInfo DirectoryManager::peekPrev() {
+    FileInfo tmp;
+    prev();
+    tmp=getFile();
+    next();
+    return tmp;
+}
+
+FileInfo DirectoryManager::peekNext() {
+    FileInfo tmp;
+    next();
+    tmp=getFile();
+    prev();
+    return tmp;
+}
+
 void DirectoryManager::loadFileInfo(QString path) {
     if(fileInfo != NULL && !fileInfo->inUse) {
-        qDebug() << "deleting unused fileInfo";
         delete fileInfo;
     }
     fileInfo = NULL;
     fileInfo = new FileInfo(&path);
 }
 
-FileInfo* DirectoryManager::setFile(QString path) {
+FileInfo DirectoryManager::setFile(QString path) {
     loadFileInfo(path);
     setCurrentDir(fileInfo->getDirPath());
-    qDebug() << fileInfo->getDirPath();
     currentPosition = fileList.indexOf(fileInfo->getName());
     setFilePositions();
+    qDebug() << "file count: " << fileList.length();
     return getFile();
 }
 
-FileInfo* DirectoryManager::getFile() {
-    return fileInfo;
+FileInfo DirectoryManager::getFile() {
+    return *fileInfo;
 }

@@ -15,14 +15,17 @@ public:
     Image* loadNext();
     Image* loadPrev();
     Image* load(QString file);
+    void preload(FileInfo);
     DirectoryManager *dirManager;
 
 private:
     ImageCache *cache;
-    void loadFromCache(Image*& image);
+    void loadImage(Image*& image);
+    Image* notCached;
 signals:
 
 public slots:
+    void deleteLastImage();
 
 };
 
