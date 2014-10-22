@@ -50,7 +50,7 @@ public:
 
     bool isDisplaying;
 
-    static const float maxScale = 0.20;
+    static const float maxScale = 0.10; //fix this crap.
     static const float minScale = 3.0;
     static const float zoomStep = 0.1;
 
