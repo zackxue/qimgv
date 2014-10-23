@@ -32,16 +32,16 @@ Image* ImageLoader::load(QString file) {
 }
 
 void ImageLoader::preload(FileInfo info) {
-    qDebug() << "LOADER: PRELOADING = " << info.getName();
     Image *img = new Image(info);
     if (!cache->imageIsCached(img))
     {
+        qDebug() << "LOADER: preloading file - " << info.getName();
         img->loadImage();
         if(!cache->pushImage(img)) {
-            deleteLastImage();
-            notCached = img;
+            delete img;
+            img = NULL;
         }
-        qDebug() << "LOADER: image preloaded";
+
     }
 }
 
@@ -49,26 +49,24 @@ void ImageLoader::loadImage(Image*& image)
 {
     qDebug() << "LOADER: opening " << image->getName();
     Image* found = cache->findImagePointer(image);
-    if (!found)
-    {
+    if(!found) {
         image->loadImage();
-        image->setInUse(true);
         if(!cache->pushImage(image)) {
             deleteLastImage();
             notCached = image;
             qDebug() << "LOADER: image not found, loading";
         }
     }
-    else
-    {
+    else {
         delete image;
         image = found;
-        qDebug() << "LOADER: image found" << image;
+        qDebug() << "LOADER: already cached - " << image->getName();
     }
+    image->setInUse(true);
 }
 
 void ImageLoader::deleteLastImage() {
-    if(notCached && !notCached->isInUse()) {// && !cache->imageIsCached(img)) {
+    if(notCached && !notCached->isInUse()) {
         delete notCached;
         notCached = NULL;
     }

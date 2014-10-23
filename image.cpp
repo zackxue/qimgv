@@ -67,7 +67,10 @@ void Image::setInUse(bool arg) {
 
 int Image::ramSize() {
     if(getType() == GIF) {
-        return 1; //later
+        //int x = movie->currentImage().byteCount()*movie->frameCount()/(1024*2014);
+        //qDebug() << "IMAGE: ramSize=" << x;
+        return 1;
+
     }
     else if(getType() == STATIC) {
         return image->byteCount()/(1024*1024);

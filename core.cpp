@@ -29,7 +29,7 @@ void Core::connectSlots() {
 
 //default settings, more to go
 void Core::initSettings() {
-    dirManager->setCurrentDir(tr("K:/_code/sao_test/"));
+    dirManager->setCurrentDir(tr("D:/Pictures/_UNSORTED/2"));
 }
 
 void Core::connectGui(MainWindow *mw) {
@@ -84,7 +84,10 @@ void Core::setDialogDir(QString path) {
 }
 
 void Core::showOpenDialog() {
-    open(openDialog->getOpenFileName());
+    QString str = openDialog->getOpenFileName();
+    if(!str.isEmpty()) {
+        open(str);
+    }
 }
 
 void Core::slotNextImage() {

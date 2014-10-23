@@ -6,7 +6,7 @@ MainWindow::MainWindow()
     resize(800, 650);
     modeFitNormal->setChecked(true);
     setMinimumSize(QSize(400,300));
-    setWindowTitle(tr("qimgv 0.24"));
+    setWindowTitle(tr("qimgv 0.24dev"));
 }
 
 void MainWindow::init() {
@@ -119,6 +119,9 @@ void MainWindow::createActions()
     this->addAction(fullscreenEnabledAct);
     connect(fullscreenEnabledAct, SIGNAL(triggered()), this, SLOT(slotFullscreen()));
 
+    aboutAct = new QAction(tr("&About"), this);
+    connect(aboutAct, SIGNAL(triggered()), this, SLOT(slotAbout()));
+
     aboutQtAct = new QAction(tr("About &Qt"), this);
     connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
@@ -152,6 +155,7 @@ void MainWindow::createMenus()
     navigationMenu->addAction(prevAct);
 
     helpMenu = new QMenu(tr("&Help"), this);
+    helpMenu->addAction(aboutAct);
     helpMenu->addAction(aboutQtAct);
 
     menuBar()->addMenu(fileMenu);
@@ -210,6 +214,17 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
 bool MainWindow::eventFilter(QObject *target, QEvent *event)
 {
     QMainWindow::eventFilter(target, event);
+}
+
+void MainWindow::slotAbout() {
+    QMessageBox msgBox;
+    QSpacerItem* horizontalSpacer = new QSpacerItem(250, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    msgBox.setWindowTitle("A simple qt image viewer");
+    msgBox.setText("Authors: \n Eugene G. \n Volegov S.");
+    msgBox.setIcon(QMessageBox::Information);
+    QGridLayout* layout = (QGridLayout*)msgBox.layout();
+    layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+    msgBox.exec();
 }
 
 MainWindow::~MainWindow()

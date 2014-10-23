@@ -1,7 +1,7 @@
 #include "imagecache.h"
 
 ImageCache::ImageCache() {
-    maxCacheSize = 512; // MB
+    maxCacheSize = 256; // MB
 }
 
 Image* ImageCache::findImagePointer(Image* image)
@@ -16,7 +16,6 @@ bool ImageCache::imageIsCached(Image* image)
 {
     for (int i = 0; i < cachedImages.size(); i++)
         if (cachedImages.at(i)->compare(image)) {
-            qDebug() << "found";
             return true;
         }
     return false;
@@ -37,15 +36,14 @@ bool ImageCache::pushImage(Image* image)
             break;
         }
     }
-    if(cacheSize() <= maxCacheSize) {
+    if(cacheSize() <= maxCacheSize - imageMBytes || cachedImages.count() == 0) {
         cachedImages.push_front(image);
-        qDebug() << "DEBUG: " << cachedImages.last()->getName();
-        qDebug() << "CACHE: image loaded - " << cachedImages.size();
+        qDebug() << "CACHE: image loaded - " << cachedImages.first()->getName();
         qDebug() << "CACHE: " << cacheSize() << "/" << maxCacheSize << " MB";
         return true;
     }
     else {
-        qDebug() << "CACHE: image too big; bypassing cache";
+        qDebug() << "CACHE: image too big - " << cachedImages.first()->getName();
         return false;
     }
 }

@@ -30,6 +30,7 @@ public slots:
     void slotPrevImage();
     void slotZoomIn();
     void slotZoomOut();
+    void slotAbout();
 
 signals:
     void signalFitAll();

@@ -21,7 +21,16 @@
 #include <time.h>
 #include "sleep.cpp"
 
-class ImageViewerPrivate;
+#include <qgraphicseffect.h>
+#define AVG(a,b)  ( ((((a)^(b)) & 0xfefefefeUL) >> 1) + ((a)&(b)) )
+
+enum WindowResizePolicy
+{
+    NORMAL,
+    WIDTH,
+    ALL,
+    FREE
+};
 
 class ImageViewer : public QWidget
 {
@@ -30,17 +39,53 @@ class ImageViewer : public QWidget
 public:
     ImageViewer();
     ImageViewer(QWidget* parent);
-    ImageViewer(QWidget* parent, Image* image);
     ~ImageViewer();
     void setImage(Image* image);
     Image* getImage() const;
     ControlsOverlay* getControls();
     bool isDisplaying();
 
+    void centerVertical();
+    void centerHorizontal();
+
+    void scaleImage();
+    float scale() const;
+    bool scaled() const;
+    void smoothScale();
+    QImage halfSized(const QImage &source);
+
+    Image* img;
+    QTimer animationTimer;
+    QImageReader imageReader;
+    QImage image, imageScaled;
+    QPoint cursorMovedDistance;
+    QRect drawingRect;
+    QSize shrinkSize;
+    MapOverlay *mapOverlay;
+    InfoOverlay *infoOverlay;
+    ControlsOverlay *controlsOverlay;
+    QFuture<void> scalerThread;
+    ImageViewer* q;
+    QMutex mutex;
+    uint lock;
+
+    WindowResizePolicy resizePolicy;
+
+    int freeSpaceLeft;
+    int freeSpaceBottom;
+    int freeSpaceRight;
+    int freeSpaceTop;
+
+    bool isDisplayingFlag;
+
+    static const float maxScale = 0.10; //fix this crap.
+    static const float minScale = 3.0;
+    static const float zoomStep = 0.1;
 
 signals:
     void sendDoubleClick();
     void imageChanged();
+    void scalingFinished();
 
 public slots:
     void slotFitNormal();
@@ -54,6 +99,7 @@ public slots:
 
 private slots:
     void onAnimation();
+    void updateAfterScaling();
 
 protected:
     virtual void paintEvent(QPaintEvent* event);
@@ -73,7 +119,7 @@ private:
     void fitAll();
     void setScale(float scale);
     void centerImage();
-    ImageViewerPrivate* d;
+    float currentScale;
 };
 
 #endif // IMAGEVIEWER_H
