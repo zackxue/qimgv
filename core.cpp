@@ -18,6 +18,7 @@ void Core::initVariables() {
     dirManager = new DirectoryManager();
     imgLoader = new ImageLoader(dirManager);
     openDialog = new OpenDialog();
+    settingsDialog = new SettingsDialog();
 }
 
 // misc connections not related to gui
@@ -25,19 +26,22 @@ void Core::connectSlots() {
     connect(dirManager, SIGNAL(directoryChanged(QString)), this, SLOT(setDialogDir(QString)));
     connect(imageViewer, SIGNAL(imageChanged()), this, SLOT(setInfoString()));
     connect(imageViewer, SIGNAL(imageChanged()), imgLoader, SLOT(deleteLastImage()));
+    connect(settingsDialog, SIGNAL(settingsChanged()), this, SLOT(initSettings()));
 }
 
-//default settings, more to go
 void Core::initSettings() {
-    dirManager->setCurrentDir(tr("D:/Pictures/_UNSORTED/2"));
+    imgLoader->readSettings();
+
 }
 
 void Core::connectGui(MainWindow *mw) {
     mainWindow = mw;
     mainWindow->setCentralWidget(imageViewer);
     openDialog->setParent(mainWindow);
+   // settingsDialog->setParent(mainWindow);
     imageViewer->setParent(mainWindow);
     connect(mainWindow, SIGNAL(signalOpenDialog()), this, SLOT(showOpenDialog()));
+    connect(mainWindow, SIGNAL(signalSettingsDialog()), this, SLOT(showSettingsDialog()));
     connect(mainWindow, SIGNAL(signalNextImage()), this, SLOT(slotNextImage()));
     connect(mainWindow, SIGNAL(signalPrevImage()), this, SLOT(slotPrevImage()));
     connect(mainWindow, SIGNAL(signalFitAll()), imageViewer, SLOT(slotFitAll()));
@@ -67,10 +71,11 @@ void Core::setInfoString() {
                       QString::number(i->getInfo().getCurrentPos()) +
                       "/" +
                       QString::number(i->getInfo().getMaxPos()) +
-                      " ] ");
+                      " ]");
     imageViewer->slotSetInfoString(infoString);
     if(mainWindow != NULL) {
-        infoString.append("- qimgv");
+        infoString.append(" - ");
+        infoString.append(QCoreApplication::applicationName());
         mainWindow->setWindowTitle(infoString);
     }
 }
@@ -88,6 +93,10 @@ void Core::showOpenDialog() {
     if(!str.isEmpty()) {
         open(str);
     }
+}
+
+void Core::showSettingsDialog() {
+    settingsDialog->show();
 }
 
 void Core::slotNextImage() {

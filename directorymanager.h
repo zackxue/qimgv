@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include "fileinfo.h"
+#include "settings.h"
 
 class DirectoryManager : public QObject
 {

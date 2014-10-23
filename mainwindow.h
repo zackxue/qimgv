@@ -6,6 +6,7 @@
 #include <QMainWindow>
 #include <QtWidgets>
 #include <QAction>
+#include "settings.h"
 
 QT_BEGIN_NAMESPACE
     class QAction;
@@ -26,6 +27,7 @@ public slots:
     void slotTriggerFullscreen();
     void slotMinimize();
     void slotOpenDialog();
+    void slotSettingsDialog();
     void slotNextImage();
     void slotPrevImage();
     void slotZoomIn();
@@ -33,6 +35,7 @@ public slots:
     void slotAbout();
 
 signals:
+    void signalSettingsDialog();
     void signalFitAll();
     void signalFitWidth();
     void signalFitNormal();
@@ -57,6 +60,7 @@ private:
     void spaceSwitchFitMode();
     
     QAction *openAct;
+    QAction *settingsAct;
     QAction *nextAct;
     QAction *prevAct;
     QAction *exitAct;

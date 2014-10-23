@@ -18,6 +18,7 @@
 #include "mapoverlay.h"
 #include "infooverlay.h"
 #include "controlsoverlay.h"
+#include "settings.h"
 #include <time.h>
 #include "sleep.cpp"
 

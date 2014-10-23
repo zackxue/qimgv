@@ -41,7 +41,6 @@ void ImageLoader::preload(FileInfo info) {
             delete img;
             img = NULL;
         }
-
     }
 }
 
@@ -70,4 +69,8 @@ void ImageLoader::deleteLastImage() {
         delete notCached;
         notCached = NULL;
     }
+}
+
+void ImageLoader::readSettings() {
+    cache->readSettings();
 }

@@ -6,7 +6,7 @@ MainWindow::MainWindow()
     resize(800, 650);
     modeFitNormal->setChecked(true);
     setMinimumSize(QSize(400,300));
-    setWindowTitle(tr("qimgv 0.24dev"));
+    setWindowTitle(QCoreApplication::applicationName() + " " + QCoreApplication::applicationVersion());
 }
 
 void MainWindow::init() {
@@ -42,6 +42,10 @@ void MainWindow::slotOpenDialog() {
     emit signalOpenDialog();
 }
 
+void MainWindow::slotSettingsDialog() {
+    emit signalSettingsDialog();
+}
+
 void MainWindow::slotNextImage() {
     emit signalNextImage();
 }
@@ -64,6 +68,11 @@ void MainWindow::createActions()
     openAct->setShortcut(Qt::Key_O);
     this->addAction(openAct);
     connect(openAct, SIGNAL(triggered()), this, SLOT(slotOpenDialog()));
+
+    settingsAct = new QAction(tr("&Settings"), this);
+    settingsAct->setShortcut(Qt::Key_S);
+    this->addAction(settingsAct);
+    connect(settingsAct, SIGNAL(triggered()), this, SLOT(slotSettingsDialog()));
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcut(tr("Alt+X"));
@@ -138,6 +147,8 @@ void MainWindow::createMenus()
 {
     fileMenu = new QMenu(tr("&File"), this);
     fileMenu->addAction(openAct);
+    fileMenu->addSeparator();
+    fileMenu->addAction(settingsAct);
     fileMenu->addSeparator();
     fileMenu->addAction(exitAct);
 
@@ -219,8 +230,11 @@ bool MainWindow::eventFilter(QObject *target, QEvent *event)
 void MainWindow::slotAbout() {
     QMessageBox msgBox;
     QSpacerItem* horizontalSpacer = new QSpacerItem(250, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
-    msgBox.setWindowTitle("A simple qt image viewer");
-    msgBox.setText("Authors: \n Eugene G. \n Volegov S.");
+    msgBox.setWindowTitle("About " +
+                          QCoreApplication::applicationName() +
+                          " " +
+                          QCoreApplication::applicationVersion());
+    msgBox.setText("A simple qt image viewer \n \n Authors: \n Eugene G. \n Volegov S.");
     msgBox.setIcon(QMessageBox::Information);
     QGridLayout* layout = (QGridLayout*)msgBox.layout();
     layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());

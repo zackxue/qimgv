@@ -8,7 +8,9 @@
 #include "imageviewer.h"
 #include "directorymanager.h"
 #include "opendialog.h"
+#include "settingsdialog.h"
 #include "imageloader.h"
+#include "settings.h"
 
 class Core : public QObject
 {
@@ -20,26 +22,28 @@ public:
     void connectGui(MainWindow*);
     void open(QString);
 
-
 private:
     void initVariables();
     void connectSlots();
-    void initSettings();
     MainWindow *mainWindow;
     OpenDialog *openDialog;
+    SettingsDialog *settingsDialog;
     ImageLoader *imgLoader;
 
 private slots:
     void setInfoString();
+
 signals:
 
 public slots:
+    void initSettings();
     void slotNextImage();
     void slotPrevImage();
     void setCurrentDir(QString);
     void setDialogDir(QString);
     //from gui
     void showOpenDialog();
+    void showSettingsDialog();
 };
 
 #endif // CORE_H

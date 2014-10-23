@@ -6,6 +6,7 @@
 #include <QPen>
 #include <QDebug>
 #include <QPaintEvent>
+#include "settings.h"
 
 class MapOverlayPrivate;
 

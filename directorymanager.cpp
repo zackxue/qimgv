@@ -6,10 +6,12 @@ DirectoryManager::DirectoryManager() :
 {
     filters << "*.jpg" << "*.jpeg" << "*.png" << "*.gif" << "*.bmp";
     currentDir.setNameFilters(filters);
+    setCurrentDir(globalSettings->s.value("lastDir", "C:/").toString());
 }
 
 void DirectoryManager::setCurrentDir(QString path) {
     if(currentDir.currentPath() != path) {
+        globalSettings->s.setValue("lastDir", path);
         qDebug() << "attempting setDir" << path;
         qDebug() << currentDir.setCurrent(path);
         currentDir.setNameFilters(filters);

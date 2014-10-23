@@ -21,21 +21,17 @@ bool ImageCache::imageIsCached(Image* image)
     return false;
 }
 
+bool ImageCache::isFull() {
+    if(cacheSize()>maxCacheSize) {
+        return true;
+    }
+    else return false;
+}
+
 bool ImageCache::pushImage(Image* image)
 {
     float imageMBytes = (float) image->ramSize();
-    while (cacheSize() > maxCacheSize - imageMBytes && cacheSize() != 0)
-    {
-        qDebug() << "DEBUG: FILE- " << cachedImages.last()->getName() << " IN USE: " << cachedImages.last()->isInUse();
-        if(!cachedImages.last()->isInUse()) {
-            qDebug() << "CACHE: deleting " << cachedImages.last()->getName() << " from cache";
-            delete cachedImages.last();
-            cachedImages.removeLast();
-        }
-        else {
-            break;
-        }
-    }
+    shrinkTo(maxCacheSize - imageMBytes);
     if(cacheSize() <= maxCacheSize - imageMBytes || cachedImages.count() == 0) {
         cachedImages.push_front(image);
         qDebug() << "CACHE: image loaded - " << cachedImages.first()->getName();
@@ -45,6 +41,44 @@ bool ImageCache::pushImage(Image* image)
     else {
         qDebug() << "CACHE: image too big - " << cachedImages.first()->getName();
         return false;
+    }
+}
+
+void ImageCache::readSettings() {
+    maxCacheSize = globalSettings->s.value("cacheSize").toInt();
+    shrinkTo(maxCacheSize);
+}
+
+// delete images until cache size is less than MB
+void ImageCache::shrinkTo(int MB) {
+    while (cacheSize() > MB && cacheSize() != 0)
+    {
+        if(!cachedImages.last()->isInUse()) {
+            qDebug() << "CACHE: deleting " <<
+                        cachedImages.last()->getName() <<
+                        ";  new size:" <<
+                        cacheSize();
+            delete cachedImages.last();
+            cachedImages.removeLast();
+        }
+        else {
+            break;
+        }
+    }
+
+    while (cacheSize() > MB && cacheSize() != 0)
+    {
+        if(!cachedImages.first()->isInUse()) {
+            qDebug() << "CACHE: deleting " <<
+                        cachedImages.first()->getName() <<
+                        ";  new size:" <<
+                        cacheSize();
+            delete cachedImages.first();
+            cachedImages.removeFirst();
+        }
+        else {
+            break;
+        }
     }
 }
 

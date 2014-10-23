@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include "imagecache.h"
+#include "settings.h"
 #include "image.h"
 #include "directorymanager.h"
 // #include "scrollarea.h"
@@ -17,11 +18,13 @@ public:
     Image* load(QString file);
     void preload(FileInfo);
     DirectoryManager *dirManager;
+    void readSettings();
 
 private:
     ImageCache *cache;
     void loadImage(Image*& image);
     Image* notCached;
+
 signals:
 
 public slots:
