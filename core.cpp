@@ -23,7 +23,6 @@ void Core::initVariables() {
 
 // misc connections not related to gui
 void Core::connectSlots() {
-    connect(dirManager, SIGNAL(directoryChanged(QString)), this, SLOT(setDialogDir(QString)));
     connect(imageViewer, SIGNAL(imageChanged()), this, SLOT(setInfoString()));
     connect(imageViewer, SIGNAL(imageChanged()), imgLoader, SLOT(deleteLastImage()));
     connect(settingsDialog, SIGNAL(settingsChanged()), this, SLOT(initSettings()));
@@ -84,10 +83,6 @@ void Core::setCurrentDir(QString path) {
     dirManager->setCurrentDir(path);
 }
 
-void Core::setDialogDir(QString path) {
-    openDialog->setDirectory(path);
-}
-
 void Core::showOpenDialog() {
     QString str = openDialog->getOpenFileName();
     if(!str.isEmpty()) {
@@ -105,7 +100,6 @@ void Core::slotNextImage() {
 
 void Core::slotPrevImage() {
     imageViewer->setImage(imgLoader->loadPrev());
-
 }
 
 void Core::open(QString filePath) {

@@ -2,10 +2,7 @@
 #include "mainwindow.h"
 #include <QApplication>
 #include <QDebug>
-//#include "image.h"
 #include "settings.h"
-
-//#include <iostream>
 
 void saveSettings() {
     delete globalSettings;
@@ -16,7 +13,7 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setOrganizationName("greenpepper software");
     QCoreApplication::setOrganizationDomain("nosite.com");
     QCoreApplication::setApplicationName("qimgv");
-    QCoreApplication::setApplicationVersion("0.24dev");
+    QCoreApplication::setApplicationVersion("0.25dev");
 
     globalSettings = Settings::getInstance();
     atexit(saveSettings);
@@ -28,8 +25,12 @@ int main(int argc, char *argv[]) {
     mw->show();
 
     if(a.arguments().length()>1) {
+        QString fileName = a.arguments().at(1);
+
+        fileName.replace("\\\\","/");
+        fileName.replace("\\","/");
         mw->slotTriggerFullscreen();
-        c->open(a.arguments().at(1));
+        c->open(fileName);
     }
 
     return a.exec();

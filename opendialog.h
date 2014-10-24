@@ -14,13 +14,11 @@ public:
 
 private:
     QFileDialog dialog;
-    QString dir;
     QWidget *parent;
 
 signals:
 
 public slots:
-    void setDirectory(QString);
     void setParent(QWidget*);
 };
 

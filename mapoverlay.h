@@ -15,7 +15,7 @@ class MapOverlay : public QWidget
     Q_OBJECT
 public:
     explicit MapOverlay(QWidget *parent = 0);
-    void updateMap(const QSize& windowRect, const QRect& drawingRect);
+    void updateMap(const QSizeF& windowRect, const QRectF& drawingRect);
     void updatePosition();
 
 protected:

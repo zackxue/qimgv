@@ -23,7 +23,8 @@
 #include "sleep.cpp"
 
 #include <qgraphicseffect.h>
-#define AVG(a,b)  ( ((((a)^(b)) & 0xfefefefeUL) >> 1) + ((a)&(b)) )
+#define FLT_EPSILON 1.19209290E-07F
+//#define AVG(a,b)  ( ((((a)^(b)) & 0xfefefefeUL) >> 1) + ((a)&(b)) )
 
 enum WindowResizePolicy
 {
@@ -59,8 +60,8 @@ public:
     QTimer animationTimer;
     QImageReader imageReader;
     QImage image, imageScaled;
-    QPoint cursorMovedDistance;
-    QRect drawingRect;
+    QPoint moveStartPos;
+    QRectF drawingRect;
     QSize shrinkSize;
     MapOverlay *mapOverlay;
     InfoOverlay *infoOverlay;
@@ -79,14 +80,16 @@ public:
 
     bool isDisplayingFlag;
 
-    static const float maxScale = 0.10; //fix this crap.
+    float maxScale = 0.50; //fix this crap.
+    static const float defaultMaxSale = 0.50;
     static const float minScale = 3.0;
     static const float zoomStep = 0.1;
 
+    void stopAnimation();
+    void startAnimation();
 signals:
     void sendDoubleClick();
     void imageChanged();
-    void scalingFinished();
 
 public slots:
     void slotFitNormal();
@@ -100,7 +103,6 @@ public slots:
 
 private slots:
     void onAnimation();
-    void updateAfterScaling();
 
 protected:
     virtual void paintEvent(QPaintEvent* event);
@@ -110,17 +112,22 @@ protected:
     virtual void resizeEvent(QResizeEvent* event);
     virtual void mouseDoubleClickEvent(QMouseEvent *event);
 
-
 private:
     void fitDefault();
-    void fitHorizontal();
-    void fitVertical();
-    void fitOriginal();
+    void fitNormal();
     void fitWidth();
     void fitAll();
     void setScale(float scale);
     void centerImage();
+    void updateMap();
     float currentScale;
+    void initOverlays();
+    QPointF zoomPoint;
+    void imageAlign();
+    void fixAlignHorizontal();
+    void fixAlignVertical();
+    void scaleAround(QPointF p, float oldScale);
+    void calculateMaxScale();
 };
 
 #endif // IMAGEVIEWER_H

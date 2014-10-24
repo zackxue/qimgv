@@ -51,7 +51,7 @@ void MapOverlay::updatePosition() {
 }
 
 // calculates outer(image) and inner(view area) squares
-void MapOverlay::updateMap(const QSize& windowSz, const QRect& drawingRect)
+void MapOverlay::updateMap(const QSizeF& windowSz, const QRectF& drawingRect)
 {
     if(windowSz.height() < drawingRect.height()
             || windowSz.width() < drawingRect.width()) {

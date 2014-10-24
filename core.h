@@ -40,7 +40,6 @@ public slots:
     void slotNextImage();
     void slotPrevImage();
     void setCurrentDir(QString);
-    void setDialogDir(QString);
     //from gui
     void showOpenDialog();
     void showSettingsDialog();
