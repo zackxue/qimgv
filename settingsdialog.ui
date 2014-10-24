@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>395</width>
-    <height>280</height>
+    <width>351</width>
+    <height>271</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,9 +16,9 @@
   <widget class="QSlider" name="cacheSlider">
    <property name="geometry">
     <rect>
-     <x>99</x>
+     <x>120</x>
      <y>30</y>
-     <width>141</width>
+     <width>161</width>
      <height>22</height>
     </rect>
    </property>
@@ -43,8 +43,8 @@
     <rect>
      <x>10</x>
      <y>30</y>
-     <width>81</width>
-     <height>16</height>
+     <width>101</width>
+     <height>21</height>
     </rect>
    </property>
    <property name="text">
@@ -54,7 +54,7 @@
   <widget class="QLabel" name="cacheLabel2">
    <property name="geometry">
     <rect>
-     <x>260</x>
+     <x>290</x>
      <y>30</y>
      <width>46</width>
      <height>21</height>
@@ -64,12 +64,12 @@
     <string/>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="Cancel">
    <property name="geometry">
     <rect>
-     <x>300</x>
+     <x>270</x>
      <y>240</y>
-     <width>75</width>
+     <width>71</width>
      <height>23</height>
     </rect>
    </property>
@@ -77,18 +77,56 @@
     <string>Cancel</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_2">
+  <widget class="QPushButton" name="OK">
    <property name="geometry">
     <rect>
-     <x>210</x>
+     <x>180</x>
      <y>240</y>
-     <width>75</width>
+     <width>81</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
     <string>OK</string>
    </property>
+  </widget>
+  <widget class="QLabel" name="fitModeLabel">
+   <property name="geometry">
+    <rect>
+     <x>11</x>
+     <y>60</y>
+     <width>101</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Default fit mode:</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="fitModeComboBox">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>60</y>
+     <width>101</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>ALL</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>WIDTH</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>NORMAL</string>
+    </property>
+   </item>
   </widget>
  </widget>
  <resources/>
@@ -110,7 +148,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton</sender>
+   <sender>Cancel</sender>
    <signal>clicked()</signal>
    <receiver>SettingsDialog</receiver>
    <slot>close()</slot>
@@ -126,7 +164,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton_2</sender>
+   <sender>OK</sender>
    <signal>clicked()</signal>
    <receiver>SettingsDialog</receiver>
    <slot>writeSettings()</slot>

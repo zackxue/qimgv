@@ -25,19 +25,24 @@ void Core::initVariables() {
 void Core::connectSlots() {
     connect(imageViewer, SIGNAL(imageChanged()), this, SLOT(setInfoString()));
     connect(imageViewer, SIGNAL(imageChanged()), imgLoader, SLOT(deleteLastImage()));
-    connect(settingsDialog, SIGNAL(settingsChanged()), this, SLOT(initSettings()));
+    connect(settingsDialog, SIGNAL(settingsChanged()), this, SLOT(reconfigure()));
 }
 
 void Core::initSettings() {
     imgLoader->readSettings();
+}
 
+// do not call before connecting gui
+// because muh architecture
+void Core::reconfigure() {
+    imgLoader->readSettings();
+    mainWindow->readSettings();
 }
 
 void Core::connectGui(MainWindow *mw) {
     mainWindow = mw;
     mainWindow->setCentralWidget(imageViewer);
     openDialog->setParent(mainWindow);
-   // settingsDialog->setParent(mainWindow);
     imageViewer->setParent(mainWindow);
     connect(mainWindow, SIGNAL(signalOpenDialog()), this, SLOT(showOpenDialog()));
     connect(mainWindow, SIGNAL(signalSettingsDialog()), this, SLOT(showSettingsDialog()));
@@ -55,6 +60,7 @@ void Core::connectGui(MainWindow *mw) {
     connect(imageViewer->getControls(), SIGNAL(exitFullscreenClicked()), mainWindow, SLOT(slotTriggerFullscreen()));
     connect(imageViewer->getControls(), SIGNAL(minimizeClicked()), mainWindow, SLOT(slotMinimize()));
     connect(imageViewer->getControls(), SIGNAL(minimizeClicked()), mainWindow, SLOT(slotMinimize()));
+    mainWindow->readSettings();
 }
 
 void Core::setInfoString() {

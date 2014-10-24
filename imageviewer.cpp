@@ -113,6 +113,7 @@ void ImageViewer::setScale(float scale) {
         }
         else if(scale <= maxScale) {
             currentScale = maxScale;
+            //resizePolicy = ALL;
         }
         else {
             currentScale = scale;
@@ -138,7 +139,6 @@ void ImageViewer::paintEvent(QPaintEvent* event) {
     painter.fillRect(rect(), QBrush(QColor(0, 0, 0)));
     painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
     //int time = clock();
-
     painter.drawImage(drawingRect, image);
     //qDebug() << "VIEWER: draw time: " << clock() - time;
 }
@@ -174,7 +174,7 @@ void ImageViewer::mouseMoveEvent(QMouseEvent* event) {
             updateMap();
         }
     }
-    if (event->buttons() & Qt::RightButton) {
+    if (event->buttons() & Qt::RightButton && isDisplayingFlag) {
         float step = (maxScale - minScale) / -300.0;
         qDebug() << maxScale;
         int currentPos = event->pos().y();
@@ -202,35 +202,46 @@ void ImageViewer::mouseReleaseEvent(QMouseEvent* event) {
 }
 
 void ImageViewer::fitWidth() {
-    float scale = (float) width() / image.width();
-    setScale(scale);
-    imageAlign();
-    drawingRect.moveTop(0);
-    update();
+    if(isDisplayingFlag) {
+        float scale = (float) width() / image.width();
+        setScale(scale);
+        imageAlign();
+        if(drawingRect.height()>height())
+            drawingRect.moveTop(0);
+        update();
+    }
+    else {
+        centerImage();
+    }
 }
 
 void ImageViewer::fitAll() {
-    bool h = image.height() <= this->height();
-    bool w = image.width() <= this->width();
-    if(h && w) {
-        fitNormal();
-    }
-    else {
-        float widgetAspect = (float) height() / width();
-        float drawingAspect = (float) drawingRect.height() /
-                                      drawingRect.width();
-        if(widgetAspect > drawingAspect) {
-            float scale = (float) width() / image.width();
-            setScale(scale);
+    if(isDisplayingFlag) {
+        bool h = image.height() <= this->height();
+        bool w = image.width() <= this->width();
+        if(h && w) {
+            fitNormal();
         }
         else {
-            float scale = (float) height() / image.height();
-            setScale(scale);
+            float widgetAspect = (float) height() / width();
+            float drawingAspect = (float) drawingRect.height() /
+                                          drawingRect.width();
+            if(widgetAspect > drawingAspect) {
+                float scale = (float) width() / image.width();
+                setScale(scale);
+            }
+            else {
+                float scale = (float) height() / image.height();
+                setScale(scale);
+            }
+            if(scaled()) {
+                drawingRect.moveCenter(rect().center());
+                update();
+            }
         }
-        if(scaled()) {
-            drawingRect.moveCenter(rect().center());
-            update();
-        }
+    }
+    else {
+        centerImage();
     }
 }
 

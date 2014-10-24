@@ -4,7 +4,6 @@ MainWindow::MainWindow()
 {
     init();
     resize(800, 650);
-    modeFitNormal->setChecked(true);
     setMinimumSize(QSize(400,300));
     setWindowTitle(QCoreApplication::applicationName() + " " + QCoreApplication::applicationVersion());
 }
@@ -12,6 +11,19 @@ MainWindow::MainWindow()
 void MainWindow::init() {
     createActions();
     createMenus();
+}
+
+void MainWindow::readSettings() {
+    QString fitMode = globalSettings->s.value("defaultFitMode", "ALL").toString();
+    if(fitMode == "WIDTH") {
+        slotFitWidth();
+    }
+    else if(fitMode == "NORMAL") {
+        slotFitNormal();
+    }
+    else {
+        slotFitAll();
+    }
 }
 
 void MainWindow::slotFitAll()

@@ -8,6 +8,7 @@
 #include <QSize>
 #include <QDebug>
 #include <QFileInfo>
+#include <QMessageBox>
 #include "fileinfo.h"
 #include "settings.h"
 
@@ -33,7 +34,7 @@ signals:
 private:
     void loadFileInfo(QString path);
     void setFilePositions();
-
+    void changePath(QString path);
 };
 
 #endif // DIRECTORYMANAGER_H

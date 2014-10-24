@@ -26,8 +26,8 @@ Image* ImageLoader::load(QString file) {
     dirManager->setFile(file);
     Image *img = new Image(dirManager->getFile());
     loadImage(img);
-    preload(dirManager->peekNext()); // move to thread
-    preload(dirManager->peekPrev()); // move to thread
+    //preload(dirManager->peekNext()); // move to thread
+    //preload(dirManager->peekPrev()); // move to thread
     return img;
 }
 

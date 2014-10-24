@@ -5,28 +5,37 @@ DirectoryManager::DirectoryManager() :
     fileInfo(new FileInfo())
 {
     filters << "*.jpg" << "*.jpeg" << "*.png" << "*.gif" << "*.bmp";
+    QString startDir = globalSettings->s.value("lastDir", currentDir.homePath()).toString();
+    qDebug() << "initial setting dir: " << startDir;
+    setCurrentDir(startDir);
     currentDir.setNameFilters(filters);
-    setCurrentDir(globalSettings->s.value("lastDir", ".").toString());
 }
 
 void DirectoryManager::setCurrentDir(QString path) {
-    if(currentDir.currentPath() != path) {
-        globalSettings->s.setValue("lastDir", path);
-        currentDir.setCurrent(path);
-        qDebug() << globalSettings->s.value("lastDir");
-        currentDir.setNameFilters(filters);
-        fileList = currentDir.entryList();
-        currentPosition = -1;
-        emit directoryChanged(path);
+    if(currentDir.exists()) {
+        if(currentDir.path() != path) {
+            changePath(path);
+        }
     }
+    else changePath(path);
+}
+
+void DirectoryManager::changePath(QString path) {
+    currentDir.setPath(path);
+    if(currentDir.isReadable())
+        globalSettings->s.setValue("lastDir", path);
+    currentDir.setNameFilters(filters);
+    currentPosition = -1;
+    fileList = currentDir.entryList();
+    emit directoryChanged(path);
 }
 
 void DirectoryManager::next() {
-    if(currentDir.exists() && fileList.length()) {
+    if(fileList.length()) {
         if(++currentPosition>=fileList.length()) {
             currentPosition=0;
         }
-        QString fileName = currentDir.currentPath()
+        QString fileName = currentDir.path()
                         +"/"
                         +fileList.at(currentPosition);
         loadFileInfo(fileName);
@@ -35,11 +44,11 @@ void DirectoryManager::next() {
 }
 
 void DirectoryManager::prev() {
-    if(currentDir.exists() && fileList.length()) {
+    if(fileList.length()) {
         if(--currentPosition<0) {
             currentPosition=fileList.length()-1;
         }
-        QString fileName = currentDir.currentPath()
+        QString fileName = currentDir.path()
                         +"/"
                         +fileList.at(currentPosition);
         loadFileInfo(fileName);

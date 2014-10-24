@@ -48,9 +48,9 @@ signals:
 
 public:
     MainWindow();
-    ~MainWindow();
+    ~MainWindow();    
+    void readSettings();
 
-    
 private:
     void init();
     void createActions();

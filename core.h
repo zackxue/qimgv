@@ -43,6 +43,7 @@ public slots:
     //from gui
     void showOpenDialog();
     void showSettingsDialog();
+    void reconfigure();
 };
 
 #endif // CORE_H

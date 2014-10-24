@@ -46,6 +46,10 @@ bool ImageCache::pushImage(Image* image)
 
 void ImageCache::readSettings() {
     maxCacheSize = globalSettings->s.value("cacheSize").toInt();
+    if(maxCacheSize < 64) {
+        maxCacheSize = 64;
+        globalSettings->s.setValue("cacheSize","64");
+    }
     shrinkTo(maxCacheSize);
 }
 
