@@ -10,6 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = qimgv
 TEMPLATE = app
+RC_FILE = qimgv.rc
 
 SOURCES += main.cpp\
         mainwindow.cpp \

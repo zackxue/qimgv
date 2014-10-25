@@ -6,6 +6,7 @@ MainWindow::MainWindow()
     resize(800, 650);
     setMinimumSize(QSize(400,300));
     setWindowTitle(QCoreApplication::applicationName() + " " + QCoreApplication::applicationVersion());
+    setWindowIcon(QIcon(":/images/res/pepper32.png"));
 }
 
 void MainWindow::init() {

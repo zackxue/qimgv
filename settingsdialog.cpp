@@ -8,6 +8,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 {
     ui->setupUi(this);
     this->setWindowTitle(tr("Settings"));
+    setWindowIcon(QIcon(":/images/res/pepper32.png"));
     readSettings();
 }
 

@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     mw->show();
 
     if(a.arguments().length()>1) {
-        QString fileName = a.arguments().at(1); // "/mnt/main/Pictures/things/2b450b34e6cd92ea52c9097874f69f3583213307.jpg";
+        QString fileName = a.arguments().at(1);
         fileName.replace("\\\\","/");
         fileName.replace("\\","/");
         mw->slotTriggerFullscreen();

@@ -24,7 +24,6 @@
 
 #include <qgraphicseffect.h>
 #define FLT_EPSILON 1.19209290E-07F
-//#define AVG(a,b)  ( ((((a)^(b)) & 0xfefefefeUL) >> 1) + ((a)&(b)) )
 
 enum WindowResizePolicy
 {
