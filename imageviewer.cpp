@@ -79,6 +79,7 @@ void ImageViewer::setImage(Image* i) {
             image = img->getMovie()->currentImage();
             maxScale = defaultMaxSale;
             startAnimation();
+            qDebug() << "startAnimation";
         }
         calculateMaxScale();
         emit imageChanged();

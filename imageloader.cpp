@@ -34,7 +34,12 @@ Image* ImageLoader::load(QString file) {
 }
 
 void ImageLoader::preload_thread(FileInfo file) {
-    QtConcurrent::run(this, &ImageLoader::preload, file);
+    //QtConcurrent::run(this, &ImageLoader::preload, file);
+    qRegisterMetaType<FileInfo>("FileInfo");
+    QMetaObject::invokeMethod(this, "preload",
+                                  Qt::QueuedConnection,
+                                  Q_ARG(FileInfo, file));
+
 }
 
 void ImageLoader::preload(FileInfo info) {

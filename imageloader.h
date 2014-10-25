@@ -17,7 +17,7 @@ public:
     Image* loadNext();
     Image* loadPrev();
     Image* load(QString file);
-    void preload(FileInfo);
+
     DirectoryManager *dirManager;
     void readSettings();
 
@@ -29,6 +29,9 @@ private:
 
     void preload_thread(FileInfo path);
 signals:
+
+private slots:
+    void preload(FileInfo);
 
 public slots:
     void deleteLastImage();
