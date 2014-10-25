@@ -84,6 +84,7 @@ void ImageViewer::setImage(Image* i) {
         emit imageChanged();
     }
     drawingRect = image.rect();
+    currentScale = 1.0;
     if(resizePolicy == FREE)
         resizePolicy = NORMAL;
     fitDefault();
@@ -363,7 +364,8 @@ void ImageViewer::scaleAround(QPointF p, float newScale) {
 void ImageViewer::slotZoomIn() {
     if(isDisplayingFlag) {
         float newScale = scale() + zoomStep;
-        if(newScale > minScale || newScale == currentScale) //skip if already minScale
+        if(newScale > minScale ||
+                newScale == currentScale) //skip if minScale
             return;
         resizePolicy = FREE;
         zoomPoint = rect().center();
@@ -374,7 +376,8 @@ void ImageViewer::slotZoomIn() {
 void ImageViewer::slotZoomOut() {
     if(isDisplayingFlag) {
         float newScale = scale() - zoomStep;
-        if(newScale < maxScale-FLT_EPSILON || newScale == currentScale) //skip if already maxScale
+        if(newScale < maxScale-FLT_EPSILON ||
+                newScale == currentScale) //skip if maxScale
             return;
         resizePolicy = FREE;
         zoomPoint = rect().center();
