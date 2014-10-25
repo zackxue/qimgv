@@ -6,6 +6,7 @@ ImageViewer::ImageViewer(): QWidget(),
     resizePolicy(NORMAL),
     img(NULL),
     isDisplayingFlag(false),
+    errorFlag(false),
     lock(0)
 {
     initOverlays();
@@ -20,6 +21,7 @@ ImageViewer::ImageViewer(QWidget* parent): QWidget(parent),
     resizePolicy(NORMAL),
     img(NULL),
     isDisplayingFlag(false),
+    errorFlag(false),
     lock(0)
 {
     initOverlays();
@@ -51,44 +53,45 @@ void ImageViewer::stopAnimation() {
 }
 
 void ImageViewer::startAnimation() {
-    connect(img->getMovie(), SIGNAL(frameChanged(int)), this, SLOT(onAnimation()));
+    connect(img->getMovie(), SIGNAL(frameChanged(int)), this, SLOT(onAnimation()),Qt::DirectConnection);
     img->getMovie()->start();
 }
 
-void ImageViewer::setImage(Image* i) {
+
+void ImageViewer::unsetImage() {
     if (img!=NULL) {
         stopAnimation();
-        //mark previous image as unused
         img->setInUse(false);
     }
-
+}
+void ImageViewer::setImage(Image* i) {
+    img = i;
     if(i->getType()==NONE) {
         //empty or corrupted image
         image.load(":/images/res/error.png");
         isDisplayingFlag = false;
+        errorFlag=true;
     }
     else {
+        errorFlag=false;
         isDisplayingFlag = true;
-        img = i;
         if(img->getType() == STATIC) {
             image = *img->getImage();
-
         }
         else if (img->getType() == GIF) {
             img->getMovie()->jumpToFrame(0);
             image = img->getMovie()->currentImage();
             maxScale = defaultMaxSale;
             startAnimation();
-            qDebug() << "startAnimation";
         }
         calculateMaxScale();
-        emit imageChanged();
     }
     drawingRect = image.rect();
     currentScale = 1.0;
     if(resizePolicy == FREE)
         resizePolicy = NORMAL;
     fitDefault();
+    emit imageChanged();
 }
 
 void ImageViewer::calculateMaxScale() {
@@ -178,7 +181,6 @@ void ImageViewer::mouseMoveEvent(QMouseEvent* event) {
     }
     if (event->buttons() & Qt::RightButton && isDisplayingFlag) {
         float step = (maxScale - minScale) / -300.0;
-        qDebug() << maxScale;
         int currentPos = event->pos().y();
         int moveDistance = moveStartPos.y() - currentPos;
         float newScale = currentScale + step*(moveDistance);
@@ -212,6 +214,9 @@ void ImageViewer::fitWidth() {
             drawingRect.moveTop(0);
         update();
     }
+    else if(errorFlag) {
+        fitNormal();
+    }
     else {
         centerImage();
     }
@@ -241,6 +246,9 @@ void ImageViewer::fitAll() {
                 update();
             }
         }
+    }
+    else if(errorFlag) {
+        fitNormal();
     }
     else {
         centerImage();
@@ -365,9 +373,12 @@ void ImageViewer::scaleAround(QPointF p, float newScale) {
 void ImageViewer::slotZoomIn() {
     if(isDisplayingFlag) {
         float newScale = scale() + zoomStep;
-        if(newScale > minScale ||
-                newScale == currentScale) //skip if minScale
+        if(newScale == currentScale) { //skip if minScale
             return;
+        }
+        if(newScale > minScale) {
+            newScale = minScale;
+        }
         resizePolicy = FREE;
         zoomPoint = rect().center();
         scaleAround(zoomPoint, newScale);
@@ -377,9 +388,11 @@ void ImageViewer::slotZoomIn() {
 void ImageViewer::slotZoomOut() {
     if(isDisplayingFlag) {
         float newScale = scale() - zoomStep;
-        if(newScale < maxScale-FLT_EPSILON ||
-                newScale == currentScale) //skip if maxScale
+        if(newScale == currentScale) //skip if maxScale
             return;
+        if(newScale < maxScale-FLT_EPSILON) {
+            newScale = maxScale;
+        }
         resizePolicy = FREE;
         zoomPoint = rect().center();
         scaleAround(zoomPoint, newScale);

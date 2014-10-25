@@ -7,6 +7,9 @@
 #include "image.h"
 #include "directorymanager.h"
 #include <QtConcurrent>
+#include <time.h>
+#include <QMutex>
+
 // #include "scrollarea.h"
 
 class ImageLoader : public QObject
@@ -24,17 +27,16 @@ public:
 private:
     ImageCache *cache;
     void loadImage(Image*& image);
-    Image* notCached;
-    int preloading;
-
     void preload_thread(FileInfo path);
+    bool writingCache;
+    QMutex mutex;
+    void lock();
+    void unlock();
+
 signals:
 
 private slots:
-    void preload(FileInfo);
-
-public slots:
-    void deleteLastImage();
+    void preload(Image*);
 
 };
 

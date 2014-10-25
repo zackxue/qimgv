@@ -24,7 +24,6 @@ void Core::initVariables() {
 // misc connections not related to gui
 void Core::connectSlots() {
     connect(imageViewer, SIGNAL(imageChanged()), this, SLOT(setInfoString()));
-    connect(imageViewer, SIGNAL(imageChanged()), imgLoader, SLOT(deleteLastImage()));
     connect(settingsDialog, SIGNAL(settingsChanged()), this, SLOT(reconfigure()));
 }
 
@@ -101,13 +100,19 @@ void Core::showSettingsDialog() {
 }
 
 void Core::slotNextImage() {
+    imageViewer->unsetImage();
     imageViewer->setImage(imgLoader->loadNext());
+    globalSettings->s.setValue("lastPosition", dirManager->currentPosition);
 }
 
 void Core::slotPrevImage() {
+    imageViewer->unsetImage();
     imageViewer->setImage(imgLoader->loadPrev());
+    globalSettings->s.setValue("lastPosition", dirManager->currentPosition);
 }
 
 void Core::open(QString filePath) {
+    imageViewer->unsetImage();
     imageViewer->setImage(imgLoader->load(filePath));
+    globalSettings->s.setValue("lastPosition", dirManager->currentPosition);
 }

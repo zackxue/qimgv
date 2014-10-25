@@ -86,6 +86,8 @@ public:
 
     void stopAnimation();
     void startAnimation();
+    void unsetImage();
+
 signals:
     void sendDoubleClick();
     void imageChanged();
@@ -122,6 +124,7 @@ private:
     float currentScale;
     void initOverlays();
     QPointF zoomPoint;
+    bool errorFlag;
     void imageAlign();
     void fixAlignHorizontal();
     void fixAlignVertical();

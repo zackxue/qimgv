@@ -247,7 +247,7 @@ void MainWindow::slotAbout() {
                           QCoreApplication::applicationName() +
                           " " +
                           QCoreApplication::applicationVersion());
-    msgBox.setText("A simple qt image viewer \n \n Authors: \n Eugene G. \n Volegov S.");
+    msgBox.setText("A simple qt image viewer \n \nMain developer: \nEugene G.");
     msgBox.setIcon(QMessageBox::Information);
     QGridLayout* layout = (QGridLayout*)msgBox.layout();
     layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());

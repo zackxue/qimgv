@@ -3,8 +3,7 @@
 ImageLoader::ImageLoader(DirectoryManager *dm) {
     cache = new ImageCache();
     dirManager = dm;
-    notCached = NULL;
-    preloading = 0;
+    writingCache = false;
 }
 
 Image* ImageLoader::loadNext() {
@@ -12,6 +11,7 @@ Image* ImageLoader::loadNext() {
     Image *img = new Image(dirManager->getFile());
     loadImage(img);
     preload_thread(dirManager->peekNext()); // move to thread later.. maybe
+    //qDebug() << "#########################";
     return img;
 }
 
@@ -20,71 +20,65 @@ Image* ImageLoader::loadPrev() {
     Image *img = new Image(dirManager->getFile());
     loadImage(img);
     preload_thread(dirManager->peekPrev()); // move to thread
+    //qDebug() << "#########################";
     return img;
 }
 
 Image* ImageLoader::load(QString file) {
-    while(preloading>0) { qDebug() << "LOADER: load - waiting"; }
+    lock();
     dirManager->setFile(file);
     Image *img = new Image(dirManager->getFile());
     loadImage(img);
+    unlock();
     preload_thread(dirManager->peekNext()); // move to thread
     preload_thread(dirManager->peekPrev()); // move to thread
+    //qDebug() << "#########################";
     return img;
 }
 
 void ImageLoader::preload_thread(FileInfo file) {
-    //QtConcurrent::run(this, &ImageLoader::preload, file);
-    qRegisterMetaType<FileInfo>("FileInfo");
-    QMetaObject::invokeMethod(this, "preload",
-                                  Qt::QueuedConnection,
-                                  Q_ARG(FileInfo, file));
-
+    Image* img = new Image(file);
+    QtConcurrent::run(this, &ImageLoader::preload, img);
 }
 
-void ImageLoader::preload(FileInfo info) {
-    while(preloading>0) { qDebug() << "LOADER: preload - waiting"; }
+void ImageLoader::lock()
+{
+    mutex.lock();
+}
 
-    Image *img = new Image(info);
+void ImageLoader::unlock()
+{
+    mutex.unlock();
+}
+
+void ImageLoader::preload(Image* img) {
+    lock();
     if (!cache->imageIsCached(img))
     {
-        preloading++;
-        qDebug() << "LOADER: preloading file - " << info.getName();
+        //qDebug() << "LOADER: preloading file - " << img->getName();
         img->loadImage();
-        if(!cache->pushImage(img)) {
+        if(!cache->cacheImageForced(img)) {
             delete img;
             img = NULL;
         }
-        preloading--;
+        img->moveToThread(this->thread()); // important
     }
-
+    unlock();
 }
 
 void ImageLoader::loadImage(Image*& image)
 {
-    qDebug() << "LOADER: opening " << image->getName();
     Image* found = cache->findImagePointer(image);
     if(!found) {
         image->loadImage();
-        if(!cache->pushImage(image)) {
-            deleteLastImage();
-            notCached = image;
-            qDebug() << "LOADER: image not found, loading";
+        if(!cache->cacheImageForced(image)) {
         }
     }
     else {
         delete image;
         image = found;
-        qDebug() << "LOADER: already cached - " << image->getName();
     }
     image->setInUse(true);
-}
-
-void ImageLoader::deleteLastImage() {
-    if(notCached && !notCached->isInUse()) {
-        delete notCached;
-        notCached = NULL;
-    }
 }
 
 void ImageLoader::readSettings() {

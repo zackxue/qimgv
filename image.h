@@ -10,14 +10,13 @@
 #include <QPixmapCache>
 #include <QImage>
 #include <QObject>
+#include <QThread>
 
 class Image : public QObject
 {
     Q_OBJECT
 public:
-    Image();
     Image(FileInfo);
-    Image(QString path);
     ~Image();
     
     QImage* getImage();

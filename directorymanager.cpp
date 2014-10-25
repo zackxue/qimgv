@@ -6,7 +6,6 @@ DirectoryManager::DirectoryManager() :
 {
     filters << "*.jpg" << "*.jpeg" << "*.png" << "*.gif" << "*.bmp";
     QString startDir = globalSettings->s.value("lastDir", currentDir.homePath()).toString();
-    qDebug() << "initial setting dir: " << startDir;
     setCurrentDir(startDir);
     currentDir.setNameFilters(filters);
 }

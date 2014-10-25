@@ -6,18 +6,26 @@ ImageCache::ImageCache() {
 
 Image* ImageCache::findImagePointer(Image* image)
 {
+    lock();
     for (int i = 0; i < cachedImages.size(); i++)
-        if (cachedImages.at(i)->compare(image))
-            return cachedImages.at(i);
+        if (cachedImages.at(i)->compare(image)) {
+            Image* tmp = cachedImages.at(i);
+            unlock();
+            return tmp;
+        }
+    unlock();
     return NULL;
 }
 
 bool ImageCache::imageIsCached(Image* image)
 {
+    lock();
     for (int i = 0; i < cachedImages.size(); i++)
         if (cachedImages.at(i)->compare(image)) {
+            unlock();
             return true;
         }
+    unlock();
     return false;
 }
 
@@ -28,26 +36,35 @@ bool ImageCache::isFull() {
     else return false;
 }
 
-bool ImageCache::pushImage(Image* image)
-{
+bool ImageCache::cacheImage(Image* image) {
+    return pushImage(image, false);
+}
+
+bool ImageCache::cacheImageForced(Image* image) {
+    return pushImage(image, true);
+}
+
+bool ImageCache::pushImage(Image* image, bool forced) {
     float imageMBytes = (float) image->ramSize();
     shrinkTo(maxCacheSize - imageMBytes);
-    if(cacheSize() <= maxCacheSize - imageMBytes || cachedImages.count() == 0) {
+    lock();
+    if(forced || (!forced && cacheSize() <= maxCacheSize - imageMBytes || cachedImages.count() == 0)) {
         cachedImages.push_front(image);
-        qDebug() << "CACHE: image loaded - " << cachedImages.first()->getName();
-        qDebug() << "CACHE: " << cacheSize() << "/" << maxCacheSize << " MB";
+        unlock();
+        //qDebug() << "CACHE: image cached - " << image->getName();
         return true;
     }
     else {
-        qDebug() << "CACHE: image too big - " << cachedImages.first()->getName();
+        unlock();
+        //qDebug() << "CACHE: image too big - " << image->getName();
         return false;
     }
 }
 
 void ImageCache::readSettings() {
     maxCacheSize = globalSettings->s.value("cacheSize").toInt();
-    if(maxCacheSize < 64) {
-        maxCacheSize = 64;
+    if(maxCacheSize < 32) {
+        maxCacheSize = 32;
         globalSettings->s.setValue("cacheSize","64");
     }
     shrinkTo(maxCacheSize);
@@ -55,13 +72,10 @@ void ImageCache::readSettings() {
 
 // delete images until cache size is less than MB
 void ImageCache::shrinkTo(int MB) {
-    while (cacheSize() > MB && cacheSize() != 0)
+    lock();
+    while (cacheSize() > MB && cachedImages.length() > 1)
     {
         if(!cachedImages.last()->isInUse()) {
-            qDebug() << "CACHE: deleting " <<
-                        cachedImages.last()->getName() <<
-                        ";  new size:" <<
-                        cacheSize();
             delete cachedImages.last();
             cachedImages.removeLast();
         }
@@ -70,13 +84,9 @@ void ImageCache::shrinkTo(int MB) {
         }
     }
 
-    while (cacheSize() > MB && cacheSize() != 0)
+    while (cacheSize() > MB && cachedImages.length() > 1)
     {
         if(!cachedImages.first()->isInUse()) {
-            qDebug() << "CACHE: deleting " <<
-                        cachedImages.first()->getName() <<
-                        ";  new size:" <<
-                        cacheSize();
             delete cachedImages.first();
             cachedImages.removeFirst();
         }
@@ -84,6 +94,15 @@ void ImageCache::shrinkTo(int MB) {
             break;
         }
     }
+    unlock();
+}
+
+void ImageCache::lock() {
+    mutex.lock();
+}
+
+void ImageCache::unlock() {
+    mutex.unlock();
 }
 
 ImageCache::~ImageCache()

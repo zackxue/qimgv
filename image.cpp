@@ -1,35 +1,20 @@
 #include "image.h"
 #include <time.h>
 
-Image::Image() : QObject(), mPath()
-{
-    image = NULL;
-    movie = NULL;
-    info = NULL;
-}
 
-Image::Image(QString path) : QObject(), mPath(path)
+//use this one
+Image::Image(FileInfo _info) : QObject()
 {
-    image = NULL;
-    movie = NULL;
-    info = NULL;
-}
-
-//use this constructor
-Image::Image(FileInfo _info) :
-    QObject(),
-    image(NULL),
-    movie(NULL),
-    info(_info)
-{
+    image = new QImage();
+    movie = new QMovie();
+    info = _info;
+    inUseFlag = false;
 }
 
 Image::~Image()
 {
-    if(info.getType()==STATIC)
-        delete image;
-    if(info.getType()==GIF)
-        delete movie;
+    delete image;
+    delete movie;
 }
 
 //load image data from disk
@@ -38,18 +23,15 @@ void Image::loadImage()
     QString path = info.getFilePath();
     if(info.getType()!=NONE)  {
         if(getType() == GIF) {
-            movie = new QMovie(path);
+            movie->setFileName(info.getFilePath());
             movie->jumpToFrame(0);
             aspectRatio = (float)movie->currentImage().height()/
                     movie->currentImage().width();
         }
         else if(getType() == STATIC) {
-            int time = clock();
-            QImage *tmp = new QImage(path);
-            image = new QImage();
+            QImage *tmp = new QImage(path); // possibly created in worker thread
             *image = tmp->convertToFormat(QImage::Format_ARGB32_Premultiplied);
             delete tmp;
-         //   qDebug() << "format: " << image->format();
             aspectRatio = (float)image->height()/
                     image->width();
         }
@@ -144,13 +126,9 @@ FileInfo Image::getInfo() {
     return info;
 }
 
-// returns true if files are identical
-// checks filename, size, date
-// does not check actual file contents
 bool Image::compare(Image* another) {
-    if(getSize() == another->getSize() &&
-       info.getLastModified() == another->getInfo().getLastModified() &&
-       getName() == another->getName() ) {
+    if(getName() == another->getName() &&
+       info.getLastModified() == another->getInfo().getLastModified() ) {
         return true;
     }
     return false;

@@ -28,6 +28,7 @@ public:
     int getCurrentPos();
     int getMaxPos();
 
+    void setType(fileType _type);
 private:
     void setFile(QString path);
     QFileInfo fInfo;

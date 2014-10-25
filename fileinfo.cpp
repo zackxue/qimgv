@@ -67,6 +67,10 @@ fileType FileInfo::getType() {
     return type;
 }
 
+void FileInfo::setType(fileType _type) {
+    type = _type;
+}
+
 void FileInfo::setPositions(int current, int from) {
     positions[0]=current;
     positions[1]=from;
