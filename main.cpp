@@ -21,7 +21,6 @@ int main(int argc, char *argv[]) {
     Core *c = new Core();
     MainWindow *mw = new MainWindow();
     c->connectGui(mw);
-    mw->show();
 
     if(a.arguments().length()>1) {
         QString fileName = a.arguments().at(1);
@@ -30,6 +29,7 @@ int main(int argc, char *argv[]) {
         mw->slotTriggerFullscreen();
         c->open(fileName);
     }
+    mw->show();
 
     return a.exec();
 }
