@@ -7,27 +7,23 @@ ImageLoader::ImageLoader(DirectoryManager *dm) {
 }
 
 Image* ImageLoader::loadNext() {
-    dirManager->next();
-    Image *img = new Image(dirManager->getFile());
+    Image *img = new Image(dirManager->next());
     loadImage(img);
     preload_thread(dirManager->peekNext()); // move to thread later.. maybe
-    //qDebug() << "#########################";
     return img;
 }
 
 Image* ImageLoader::loadPrev() {
-    dirManager->prev();
-    Image *img = new Image(dirManager->getFile());
+    Image *img = new Image(dirManager->prev());
     loadImage(img);
     preload_thread(dirManager->peekPrev()); // move to thread
     //qDebug() << "#########################";
     return img;
 }
 
-Image* ImageLoader::load(QString file) {
+Image* ImageLoader::load(QString path) {
     lock();
-    dirManager->setFile(file);
-    Image *img = new Image(dirManager->getFile());
+    Image *img = new Image(dirManager->setFile(path));
     loadImage(img);
     unlock();
     preload_thread(dirManager->peekNext()); // move to thread
@@ -36,7 +32,7 @@ Image* ImageLoader::load(QString file) {
     return img;
 }
 
-void ImageLoader::preload_thread(FileInfo file) {
+void ImageLoader::preload_thread(FileInfo *file) {
     Image* img = new Image(file);
     QtConcurrent::run(this, &ImageLoader::preload, img);
 }
@@ -53,6 +49,7 @@ void ImageLoader::unlock()
 
 void ImageLoader::preload(Image* img) {
     lock();
+    cache->lock();
     if (!cache->imageIsCached(img))
     {
         //qDebug() << "LOADER: preloading file - " << img->getName();
@@ -63,11 +60,13 @@ void ImageLoader::preload(Image* img) {
         }
         img->moveToThread(this->thread()); // important
     }
+    cache->unlock();
     unlock();
 }
 
 void ImageLoader::loadImage(Image*& image)
 {
+    cache->lock();
     Image* found = cache->findImagePointer(image);
     if(!found) {
         image->loadImage();
@@ -79,8 +78,9 @@ void ImageLoader::loadImage(Image*& image)
         image = found;
     }
     image->setInUse(true);
+    cache->unlock();
 }
 
 void ImageLoader::readSettings() {
-    cache->readSettings();
+    cache->applySettings();
 }

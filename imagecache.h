@@ -15,7 +15,7 @@ public:
     bool imageIsCached(Image*);
     bool pushImage(Image*, bool);
     qint64 cacheSize() const;
-    void readSettings();
+    void applySettings();
     bool isFull();
     bool cacheImage(Image *image);
     bool cacheImageForced(Image *image);
@@ -26,6 +26,7 @@ private:
     QVector<Image*> cachedImages;
     uint maxCacheSize;
     QMutex mutex;
+    void readSettings();
 };
 
 #endif // IMAGECACHE_H

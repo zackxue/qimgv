@@ -1,31 +1,25 @@
 #include "imagecache.h"
 
 ImageCache::ImageCache() {
-    maxCacheSize = 256; // MB
+    applySettings();
 }
 
 Image* ImageCache::findImagePointer(Image* image)
 {
-    lock();
     for (int i = 0; i < cachedImages.size(); i++)
         if (cachedImages.at(i)->compare(image)) {
             Image* tmp = cachedImages.at(i);
-            unlock();
             return tmp;
         }
-    unlock();
     return NULL;
 }
 
 bool ImageCache::imageIsCached(Image* image)
 {
-    lock();
     for (int i = 0; i < cachedImages.size(); i++)
         if (cachedImages.at(i)->compare(image)) {
-            unlock();
             return true;
         }
-    unlock();
     return false;
 }
 
@@ -47,15 +41,13 @@ bool ImageCache::cacheImageForced(Image* image) {
 bool ImageCache::pushImage(Image* image, bool forced) {
     float imageMBytes = (float) image->ramSize();
     shrinkTo(maxCacheSize - imageMBytes);
-    lock();
-    if(forced || (!forced && cacheSize() <= maxCacheSize - imageMBytes || cachedImages.count() == 0)) {
+    if(forced || (!forced && cacheSize() <= maxCacheSize - imageMBytes ||
+                  cachedImages.count() == 0)) {
         cachedImages.push_front(image);
-        unlock();
         //qDebug() << "CACHE: image cached - " << image->getName();
         return true;
     }
     else {
-        unlock();
         //qDebug() << "CACHE: image too big - " << image->getName();
         return false;
     }
@@ -65,15 +57,19 @@ void ImageCache::readSettings() {
     maxCacheSize = globalSettings->s.value("cacheSize").toInt();
     if(maxCacheSize < 32) {
         maxCacheSize = 32;
-        globalSettings->s.setValue("cacheSize","64");
+        globalSettings->s.setValue("cacheSize","32");
     }
+}
+
+void ImageCache::applySettings() {
+    readSettings();
     shrinkTo(maxCacheSize);
 }
 
 // delete images until cache size is less than MB
 void ImageCache::shrinkTo(int MB) {
-    lock();
-    while (cacheSize() > MB && cachedImages.length() > 1)
+    while (cacheSize() > MB && cachedImages.length() > 1) // wipes previous
+    //while (cacheSize() > MB && cachedImages.length() > 2) // leaves previous
     {
         if(!cachedImages.last()->isInUse()) {
             delete cachedImages.last();
@@ -84,7 +80,8 @@ void ImageCache::shrinkTo(int MB) {
         }
     }
 
-    while (cacheSize() > MB && cachedImages.length() > 1)
+    while (cacheSize() > MB && cachedImages.length() > 1) // wipes previous
+    //while (cacheSize() > MB && cachedImages.length() > 2) // leaves previous
     {
         if(!cachedImages.first()->isInUse()) {
             delete cachedImages.first();
@@ -94,7 +91,6 @@ void ImageCache::shrinkTo(int MB) {
             break;
         }
     }
-    unlock();
 }
 
 void ImageCache::lock() {

@@ -1,21 +1,89 @@
 #include "mainwindow.h"
 
-MainWindow::MainWindow()
+MainWindow::MainWindow() :
+    imageViewer(NULL),
+    settingsDialog(NULL)
 {
     init();
     resize(800, 650);
     setMinimumSize(QSize(400,300));
-    setWindowTitle(QCoreApplication::applicationName() + " " + QCoreApplication::applicationVersion());
+    setWindowTitle(QCoreApplication::applicationName() +
+                   " " +
+                   QCoreApplication::applicationVersion());
     setWindowIcon(QIcon(":/images/res/pepper32.png"));
 }
 
 void MainWindow::init() {
+    settingsDialog = new SettingsDialog();
+    imageViewer = new ImageViewer(this);
+    infoOverlay = new InfoOverlay(imageViewer);
+    controlsOverlay = new ControlsOverlay(imageViewer);
+    infoOverlay->hide();
+    controlsOverlay->hide();
+    this->setCentralWidget(imageViewer);
+    core = new Core();
+
+    connect(this, SIGNAL(signalNextImage()),
+            core, SLOT(slotNextImage()));
+
+    connect(this, SIGNAL(signalPrevImage()),
+            core, SLOT(slotPrevImage()));
+
+    connect(this, SIGNAL(fileOpened(QString)),
+            core, SLOT(loadImage(QString)));
+
+    connect(settingsDialog, SIGNAL(settingsChanged()),
+            core, SLOT(reconfigure()));
+
+    connect(this, SIGNAL(signalFitAll()),
+            imageViewer, SLOT(slotFitAll()));
+
+    connect(this, SIGNAL(signalFitWidth()),
+            imageViewer, SLOT(slotFitWidth()));
+
+    connect(this, SIGNAL(signalFitNormal()),
+            imageViewer, SLOT(slotFitNormal()));
+
+    connect(this, SIGNAL(signalZoomIn()),
+            imageViewer, SLOT(slotZoomIn()));
+
+    connect(this, SIGNAL(signalZoomOut()),
+            imageViewer, SLOT(slotZoomOut()));
+
+    connect(imageViewer, SIGNAL(sendDoubleClick()),
+            this, SLOT(slotTriggerFullscreen()));
+
+    connect(this, SIGNAL(signalFullscreenEnabled(bool)),
+            this, SLOT(slotShowControls(bool)));
+
+    connect(this, SIGNAL(signalFullscreenEnabled(bool)),
+            this, SLOT(slotShowInfo(bool)));
+
+    connect(core, SIGNAL(infoStringChanged(QString)),
+            this, SLOT(setInfoString(QString)));
+
+    connect(core, SIGNAL(signalUnsetImage()),
+            imageViewer, SLOT(unsetImage()));
+
+    connect(core, SIGNAL(signalSetImage(Image*)),
+            imageViewer, SLOT(setImage(Image*)));
+
+    connect(controlsOverlay, SIGNAL(exitClicked()),
+            this, SLOT(close()));
+
+    connect(controlsOverlay, SIGNAL(exitFullscreenClicked()),
+            this, SLOT(slotTriggerFullscreen()));
+
+    connect(controlsOverlay, SIGNAL(minimizeClicked()),
+            this, SLOT(slotMinimize()));
+
     createActions();
     createMenus();
 }
 
 void MainWindow::readSettings() {
-    QString fitMode = globalSettings->s.value("defaultFitMode", "ALL").toString();
+    QString fitMode =
+            globalSettings->s.value("defaultFitMode", "ALL").toString();
     if(fitMode == "WIDTH") {
         slotFitWidth();
     }
@@ -25,6 +93,31 @@ void MainWindow::readSettings() {
     else {
         slotFitAll();
     }
+}
+
+void MainWindow::slotOpenDialog() {
+    QFileDialog dialog;
+    const QString imagesFilter = tr("Images (*.png *.jpg *jpeg *bmp *gif)");
+    QString lastDir = globalSettings->s.value("lastDir",".").toString();
+    QString str = dialog.getOpenFileName(this,
+                                         tr("Open image"),
+                                         lastDir,
+                                         imagesFilter,
+                                         0);
+    emit fileOpened(str);
+}
+
+void MainWindow::slotShowControls(bool x) {
+    x?controlsOverlay->show():controlsOverlay->hide();
+}
+
+void MainWindow::slotShowInfo(bool x) {
+    x?infoOverlay->show():infoOverlay->hide();
+}
+
+void MainWindow::setInfoString(QString text) {
+    infoOverlay->setText(text);
+    setWindowTitle(text);
 }
 
 void MainWindow::slotFitAll()
@@ -51,30 +144,6 @@ void MainWindow::slotFitNormal()
     emit signalFitNormal();
 }
 
-void MainWindow::slotOpenDialog() {
-    emit signalOpenDialog();
-}
-
-void MainWindow::slotSettingsDialog() {
-    emit signalSettingsDialog();
-}
-
-void MainWindow::slotNextImage() {
-    emit signalNextImage();
-}
-
-void MainWindow::slotPrevImage() {
-    emit signalPrevImage();
-}
-
-void MainWindow::slotZoomIn() {
-    emit signalZoomIn();
-}
-
-void MainWindow::slotZoomOut() {
-    emit signalZoomOut();
-}
-
 void MainWindow::createActions()
 {
     openAct = new QAction(tr("&Open..."), this);
@@ -85,7 +154,7 @@ void MainWindow::createActions()
     settingsAct = new QAction(tr("&Settings"), this);
     settingsAct->setShortcut(Qt::Key_S);
     this->addAction(settingsAct);
-    connect(settingsAct, SIGNAL(triggered()), this, SLOT(slotSettingsDialog()));
+    connect(settingsAct, SIGNAL(triggered()), settingsDialog, SLOT(show()));
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcut(tr("Alt+X"));
@@ -96,22 +165,22 @@ void MainWindow::createActions()
     nextAct->setShortcut(Qt::Key_Right);
     nextAct->setEnabled(true);
     this->addAction(nextAct);
-    connect(nextAct, SIGNAL(triggered()), this, SLOT(slotNextImage()));
+    connect(nextAct, SIGNAL(triggered()), core, SLOT(slotNextImage()));
 
     prevAct = new QAction(tr("P&rev"), this);
     prevAct->setShortcut(Qt::Key_Left);
     this->addAction(prevAct);
-    connect(prevAct, SIGNAL(triggered()), this, SLOT(slotPrevImage()));
+    connect(prevAct, SIGNAL(triggered()), core, SLOT(slotPrevImage()));
 
     zoomInAct = new QAction(tr("Zoom &In (10%)"), this);
     zoomInAct->setShortcut(Qt::Key_Up);
     this->addAction(zoomInAct);
-    connect(zoomInAct, SIGNAL(triggered()), this, SLOT(slotZoomIn()));
+    connect(zoomInAct, SIGNAL(triggered()), imageViewer, SLOT(slotZoomIn()));
 
     zoomOutAct = new QAction(tr("Zoom &Out (10%)"), this);
     zoomOutAct->setShortcut(Qt::Key_Down);
     this->addAction(zoomOutAct);
-    connect(zoomOutAct, SIGNAL(triggered()), this, SLOT(slotZoomOut()));
+    connect(zoomOutAct, SIGNAL(triggered()), imageViewer, SLOT(slotZoomOut()));
 
     modeFitNormal = new QAction(tr("&Normal Size"), this);
     modeFitNormal->setShortcut(Qt::Key_N);
@@ -139,7 +208,8 @@ void MainWindow::createActions()
     fullscreenEnabledAct->setCheckable(true);
     fullscreenEnabledAct->setShortcut(Qt::Key_F);
     this->addAction(fullscreenEnabledAct);
-    connect(fullscreenEnabledAct, SIGNAL(triggered()), this, SLOT(slotFullscreen()));
+    connect(fullscreenEnabledAct, SIGNAL(triggered()),
+            this, SLOT(slotFullscreen()));
 
     aboutAct = new QAction(tr("&About"), this);
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(slotAbout()));
@@ -150,10 +220,6 @@ void MainWindow::createActions()
     modeFitNormal->setEnabled(true);
     modeFitAll->setEnabled(true);
     modeFitWidth->setEnabled(true);
-}
-
-void MainWindow::updateActions()
-{
 }
 
 void MainWindow::createMenus()
@@ -221,9 +287,26 @@ void MainWindow::spaceSwitchFitMode() {
     }
 }
 
+void MainWindow::slotSetInfoString(QString info) {
+    infoOverlay->setText(info);
+    info.append(" - ");
+    info.append(QCoreApplication::applicationName());
+    setWindowTitle(info);
+}
+
+void MainWindow::resizeEvent(QResizeEvent* event) {
+    controlsOverlay->updateSize();
+    infoOverlay->updateSize();
+}
+
 void MainWindow::wheelEvent(QWheelEvent *event)
 {
-    event->angleDelta().ry() < 0 ? slotNextImage() : slotPrevImage();
+    if(event->angleDelta().ry() < 0) {
+        emit signalNextImage();
+    }
+    else {
+        emit signalPrevImage();
+    }
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event)
@@ -242,7 +325,11 @@ bool MainWindow::eventFilter(QObject *target, QEvent *event)
 
 void MainWindow::slotAbout() {
     QMessageBox msgBox;
-    QSpacerItem* horizontalSpacer = new QSpacerItem(250, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+    QSpacerItem* horizontalSpacer =
+            new QSpacerItem(250,
+                            0,
+                            QSizePolicy::Minimum,
+                            QSizePolicy::Expanding);
     msgBox.setWindowTitle("About " +
                           QCoreApplication::applicationName() +
                           " " +
@@ -250,7 +337,11 @@ void MainWindow::slotAbout() {
     msgBox.setText("A simple qt image viewer \n \nMain developer: \nEugene G.");
     msgBox.setIcon(QMessageBox::Information);
     QGridLayout* layout = (QGridLayout*)msgBox.layout();
-    layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
+    layout->addItem(horizontalSpacer,
+                    layout->rowCount(),
+                    0,
+                    1,
+                    layout->columnCount());
     msgBox.exec();
 }
 

@@ -3,7 +3,7 @@
 
 
 //use this one
-Image::Image(FileInfo _info) : QObject()
+Image::Image(FileInfo* _info) : QObject()
 {
     image = new QImage();
     movie = new QMovie();
@@ -20,13 +20,15 @@ Image::~Image()
 //load image data from disk
 void Image::loadImage()
 {
-    QString path = info.getFilePath();
-    if(info.getType()!=NONE)  {
+    QString path = info->getFilePath();
+    if(info->getType()!=NONE)  {
         if(getType() == GIF) {
-            movie->setFileName(info.getFilePath());
+            movie->setFileName(info->getFilePath());
             movie->jumpToFrame(0);
             aspectRatio = (float)movie->currentImage().height()/
                     movie->currentImage().width();
+            info->setHeight(movie->currentImage().height());
+            info->setWidth(movie->currentImage().width());
         }
         else if(getType() == STATIC) {
             QImage *tmp = new QImage(path); // possibly created in worker thread
@@ -34,8 +36,10 @@ void Image::loadImage()
             delete tmp;
             aspectRatio = (float)image->height()/
                     image->width();
+            info->setHeight(image->height());
+            info->setWidth(image->width());
         }
-        info.inUse = true;
+        info->inUse = true;
     }
 }
 
@@ -49,8 +53,6 @@ void Image::setInUse(bool arg) {
 
 int Image::ramSize() {
     if(getType() == GIF) {
-        //int x = movie->currentImage().byteCount()*movie->frameCount()/(1024*2014);
-        //qDebug() << "IMAGE: ramSize=" << x;
         return 1;
 
     }
@@ -71,30 +73,30 @@ QImage* Image::getImage()
 }
 
 int Image::height() {
-    if(info.getType() == GIF) {
+    if(info->getType() == GIF) {
         return movie->currentImage().height();
     }
-    if(info.getType() == STATIC) {
+    if(info->getType() == STATIC) {
         return image->height();
     }
     else return 1;
 }
 
 int Image::width() {
-    if(info.getType() == GIF) {
+    if(info->getType() == GIF) {
         return movie->currentImage().width();
     }
-    if(info.getType() == STATIC) {
+    if(info->getType() == STATIC) {
         return image->width();
     }
     else return 1;
 }
 
 QSize Image::size() {
-    if(info.getType() == GIF) {
+    if(info->getType() == GIF) {
         return movie->currentImage().size();
     }
-    if(info.getType() == STATIC) {
+    if(info->getType() == STATIC) {
         return image->size();
     }
     else return QSize(1,1);
@@ -106,29 +108,29 @@ float Image::getAspect() {
 
 int Image::getType()
 {
-    return info.getType();
+    return info->getType();
 }
 
 QString Image::getPath()
 {
-    return info.getFilePath();
+    return info->getFilePath();
 }
 
 qint64 Image::getSize() {
-    return info.getSize();
+    return info->getSize();
 }
 
 QString Image::getName() {
-    return info.getName();
+    return info->getName();
 }
 
-FileInfo Image::getInfo() {
+FileInfo* Image::getInfo() const {
     return info;
 }
 
 bool Image::compare(Image* another) {
     if(getName() == another->getName() &&
-       info.getLastModified() == another->getInfo().getLastModified() ) {
+       info->getLastModified() == another->getInfo()->getLastModified() ) {
         return true;
     }
     return false;

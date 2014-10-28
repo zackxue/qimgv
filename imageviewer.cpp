@@ -1,44 +1,36 @@
 #include "imageviewer.h"
 
 ImageViewer::ImageViewer(): QWidget(),
-    shrinkSize(),
     currentScale(1.0),
-    resizePolicy(NORMAL),
-    img(NULL),
+    imageFitMode(NORMAL),
+    currentImage(NULL),
     isDisplayingFlag(false),
-    errorFlag(false),
-    lock(0)
+    errorFlag(false)
 {
-    initOverlays();
+    initMap();
     image.load(":/images/res/logo.png");
     drawingRect = image.rect();
     fitDefault();
 }
 
 ImageViewer::ImageViewer(QWidget* parent): QWidget(parent),
-    shrinkSize(),
     currentScale(1.0),
-    resizePolicy(NORMAL),
-    img(NULL),
+    imageFitMode(NORMAL),
+    currentImage(NULL),
     isDisplayingFlag(false),
-    errorFlag(false),
-    lock(0)
+    errorFlag(false)
 {
-    initOverlays();
+    initMap();
     image.load(":/images/res/logo.png");
     drawingRect = image.rect();
 }
 
 ImageViewer::~ImageViewer() {
-    delete img;
+    delete currentImage;
 }
 
-void ImageViewer::initOverlays() {
-    infoOverlay = new InfoOverlay(this);
+void ImageViewer::initMap() {
     mapOverlay = new MapOverlay(this);
-    controlsOverlay = new ControlsOverlay(this);
-    infoOverlay->hide();
-    controlsOverlay->hide();
 }
 
 bool ImageViewer::scaled() const {
@@ -46,26 +38,28 @@ bool ImageViewer::scaled() const {
 }
 
 void ImageViewer::stopAnimation() {
-    if(img->getType()==GIF) {
-        img->getMovie()->stop();
-        disconnect(img->getMovie(), SIGNAL(frameChanged(int)), this, SLOT(onAnimation()));
+    if(currentImage->getType()==GIF) {
+        currentImage->getMovie()->stop();
+        disconnect(currentImage->getMovie(), SIGNAL(frameChanged(int)),
+                   this, SLOT(onAnimation()));
     }
 }
 
 void ImageViewer::startAnimation() {
-    connect(img->getMovie(), SIGNAL(frameChanged(int)), this, SLOT(onAnimation()),Qt::DirectConnection);
-    img->getMovie()->start();
+    connect(currentImage->getMovie(), SIGNAL(frameChanged(int)),
+            this, SLOT(onAnimation()),Qt::DirectConnection);
+    currentImage->getMovie()->start();
 }
 
 
 void ImageViewer::unsetImage() {
-    if (img!=NULL) {
+    if (currentImage!=NULL) {
         stopAnimation();
-        img->setInUse(false);
+        currentImage->setInUse(false);
     }
 }
 void ImageViewer::setImage(Image* i) {
-    img = i;
+    currentImage = i;
     if(i->getType()==NONE) {
         //empty or corrupted image
         image.load(":/images/res/error.png");
@@ -75,21 +69,21 @@ void ImageViewer::setImage(Image* i) {
     else {
         errorFlag=false;
         isDisplayingFlag = true;
-        if(img->getType() == STATIC) {
-            image = *img->getImage();
+        if(currentImage->getType() == STATIC) {
+            image = *currentImage->getImage();
         }
-        else if (img->getType() == GIF) {
-            img->getMovie()->jumpToFrame(0);
-            image = img->getMovie()->currentImage();
-            maxScale = defaultMaxSale;
+        else if (currentImage->getType() == GIF) {
+            currentImage->getMovie()->jumpToFrame(0);
+            image = currentImage->getMovie()->currentImage();
+            maxScale = defaultMaxScale;
             startAnimation();
         }
         calculateMaxScale();
     }
     drawingRect = image.rect();
     currentScale = 1.0;
-    if(resizePolicy == FREE)
-        resizePolicy = NORMAL;
+    if(imageFitMode == FREE)
+        imageFitMode = NORMAL;
     fitDefault();
     emit imageChanged();
 }
@@ -103,8 +97,8 @@ void ImageViewer::calculateMaxScale() {
     else {
         maxScale = newMaxScaleY;
     }
-    if(maxScale > defaultMaxSale)
-        maxScale = defaultMaxSale;
+    if(maxScale > defaultMaxScale)
+        maxScale = defaultMaxScale;
 }
 
 float ImageViewer::scale() const {
@@ -129,12 +123,8 @@ void ImageViewer::setScale(float scale) {
     }
 }
 
-void ImageViewer::scaleImage() {
-    update();
-}
-
 void ImageViewer::onAnimation() {
-    image = img->getMovie()->currentImage();
+    image = currentImage->getMovie()->currentImage();
     update();
 }
 
@@ -150,13 +140,13 @@ void ImageViewer::paintEvent(QPaintEvent* event) {
 // ##############################################
 
 void ImageViewer::mousePressEvent(QMouseEvent* event) {
-    moveStartPos = event->pos();
+    mouseMoveStartPos = event->pos();
     if (event->button() == Qt::LeftButton) {
         this->setCursor(QCursor(Qt::ClosedHandCursor));
     }
     if (event->button() == Qt::RightButton) {
         this->setCursor(QCursor(Qt::SizeVerCursor));
-        zoomPoint = event->pos();
+        fixedZoomPoint = event->pos();
     }
 }
 
@@ -165,16 +155,16 @@ void ImageViewer::mouseMoveEvent(QMouseEvent* event) {
         if(drawingRect.size().width() > this->width() ||
            drawingRect.size().height() > this->height())
         {
-            moveStartPos -= event->pos();
-            int left = drawingRect.x() - moveStartPos.x();
-            int top = drawingRect.y() - moveStartPos.y();
+            mouseMoveStartPos -= event->pos();
+            int left = drawingRect.x() - mouseMoveStartPos.x();
+            int top = drawingRect.y() - mouseMoveStartPos.y();
             int right = left + drawingRect.width();
             int bottom = top + drawingRect.height();
             if (left <= 0 && right > size().width())
                 drawingRect.moveLeft(left);
             if (top <= 0 && bottom > size().height())
                 drawingRect.moveTop(top);
-            moveStartPos = event->pos();
+            mouseMoveStartPos = event->pos();
             update();
             updateMap();
         }
@@ -182,7 +172,7 @@ void ImageViewer::mouseMoveEvent(QMouseEvent* event) {
     if (event->buttons() & Qt::RightButton && isDisplayingFlag) {
         float step = (maxScale - minScale) / -300.0;
         int currentPos = event->pos().y();
-        int moveDistance = moveStartPos.y() - currentPos;
+        int moveDistance = mouseMoveStartPos.y() - currentPos;
         float newScale = currentScale + step*(moveDistance);
         if(moveDistance > 0 && newScale > minScale) {
                 newScale = minScale;
@@ -193,15 +183,15 @@ void ImageViewer::mouseMoveEvent(QMouseEvent* event) {
         if(newScale == currentScale) {
             return;
         }
-        resizePolicy = FREE;
-        scaleAround(zoomPoint, newScale);
-        moveStartPos = event->pos();
+        imageFitMode = FREE;
+        scaleAround(fixedZoomPoint, newScale);
+        mouseMoveStartPos = event->pos();
     }
 }
 
 void ImageViewer::mouseReleaseEvent(QMouseEvent* event) {
-    moveStartPos = event->pos();
-    zoomPoint = event->pos();
+    mouseMoveStartPos = event->pos();
+    fixedZoomPoint = event->pos();
     this->setCursor(QCursor(Qt::ArrowCursor));
 }
 
@@ -262,7 +252,7 @@ void ImageViewer::fitNormal() {
 }
 
 void ImageViewer::fitDefault() {
-    switch(resizePolicy) {
+    switch(imageFitMode) {
         case NORMAL: fitNormal(); break;
         case WIDTH: fitWidth(); break;
         case ALL: fitAll(); break;
@@ -275,37 +265,30 @@ void ImageViewer::updateMap() {
     mapOverlay->updateMap(size(), drawingRect);
 }
 
-void ImageViewer::centerImage() {
-    drawingRect.moveCenter(rect().center());
-    imageAlign();
-}
-
 void ImageViewer::slotFitNormal() {
-    resizePolicy = NORMAL;
+    imageFitMode = NORMAL;
     fitDefault();
 }
 
 void ImageViewer::slotFitWidth() {
-    resizePolicy = WIDTH;
+    imageFitMode = WIDTH;
     fitDefault();
 }
 
 void ImageViewer::slotFitAll() {
-    resizePolicy = ALL;
+    imageFitMode = ALL;
     fitDefault();
 }
 
 void ImageViewer::resizeEvent(QResizeEvent* event) {
-    resize(event->size());
     calculateMaxScale();
-    if(resizePolicy == FREE || resizePolicy == NORMAL) {
+    if(imageFitMode == FREE || imageFitMode == NORMAL) {
         imageAlign();
     }
     else {
         fitDefault();
     }
     mapOverlay->updateMap(size(),drawingRect);
-    controlsOverlay->updateSize();
     mapOverlay->updatePosition();
 }
 
@@ -318,7 +301,13 @@ void ImageViewer::mouseDoubleClickEvent(QMouseEvent *event) {
     }
 }
 
-// #####################################
+// center image
+void ImageViewer::centerImage() {
+    drawingRect.moveCenter(rect().center());
+    imageAlign();
+}
+
+// fix image positions
 void ImageViewer::imageAlign() {
     if(drawingRect.height() <= height()) {
         drawingRect.moveTop((height()-drawingRect.height())/2);
@@ -368,55 +357,38 @@ void ImageViewer::scaleAround(QPointF p, float newScale) {
     update();
     updateMap();
 }
-// #####################################
 
 void ImageViewer::slotZoomIn() {
     if(isDisplayingFlag) {
-        float newScale = scale() + zoomStep;
+        float newScale = scale() + scaleStep;
         if(newScale == currentScale) { //skip if minScale
             return;
         }
         if(newScale > minScale) {
             newScale = minScale;
         }
-        resizePolicy = FREE;
-        zoomPoint = rect().center();
-        scaleAround(zoomPoint, newScale);
+        imageFitMode = FREE;
+        fixedZoomPoint = rect().center();
+        scaleAround(fixedZoomPoint, newScale);
     }
 }
 
 void ImageViewer::slotZoomOut() {
     if(isDisplayingFlag) {
-        float newScale = scale() - zoomStep;
+        float newScale = scale() - scaleStep;
         if(newScale == currentScale) //skip if maxScale
             return;
         if(newScale < maxScale-FLT_EPSILON) {
             newScale = maxScale;
         }
-        resizePolicy = FREE;
-        zoomPoint = rect().center();
-        scaleAround(zoomPoint, newScale);
+        imageFitMode = FREE;
+        fixedZoomPoint = rect().center();
+        scaleAround(fixedZoomPoint, newScale);
     }
 }
 
-Image* ImageViewer::getImage() const {
-    return img;
-}
-
-void ImageViewer::slotSetInfoString(QString info) {
-    infoOverlay->setText(info);
-}
-
-void ImageViewer::slotShowInfo(bool x) {
-    x?infoOverlay->show():infoOverlay->hide();
-}
-
-void ImageViewer::slotShowControls(bool x) {
-    x?controlsOverlay->show():controlsOverlay->hide();
-}
-
-ControlsOverlay* ImageViewer::getControls() {
-    return controlsOverlay;
+Image* ImageViewer::getCurrentImage() const {
+    return currentImage;
 }
 
 bool ImageViewer::isDisplaying() {

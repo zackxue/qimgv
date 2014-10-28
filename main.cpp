@@ -1,4 +1,3 @@
-#include "core.h"
 #include "mainwindow.h"
 #include <QApplication>
 #include <QDebug>
@@ -18,18 +17,16 @@ int main(int argc, char *argv[]) {
     globalSettings = Settings::getInstance();
     atexit(saveSettings);
 
-    Core *c = new Core();
-    MainWindow *mw = new MainWindow();
-    c->connectGui(mw);
+    MainWindow mw;
 
     if(a.arguments().length()>1) {
         QString fileName = a.arguments().at(1);
         fileName.replace("\\\\","/");
         fileName.replace("\\","/");
-        mw->slotTriggerFullscreen();
-        c->open(fileName);
+        mw.slotTriggerFullscreen();
+//        c->loadImage(fileName);
     }
-    mw->show();
+    mw.show();
 
     return a.exec();
 }

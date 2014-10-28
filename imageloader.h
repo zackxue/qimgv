@@ -27,7 +27,7 @@ public:
 private:
     ImageCache *cache;
     void loadImage(Image*& image);
-    void preload_thread(FileInfo path);
+    void preload_thread(FileInfo* path);
     bool writingCache;
     QMutex mutex;
     void lock();

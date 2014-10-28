@@ -16,16 +16,12 @@
 #include <vector>
 #include "image.h"
 #include "mapoverlay.h"
-#include "infooverlay.h"
-#include "controlsoverlay.h"
 #include "settings.h"
 #include <time.h>
-#include "sleep.cpp"
 
-#include <qgraphicseffect.h>
 #define FLT_EPSILON 1.19209290E-07F
 
-enum WindowResizePolicy
+enum ImageFitMode
 {
     NORMAL,
     WIDTH,
@@ -41,66 +37,21 @@ public:
     ImageViewer();
     ImageViewer(QWidget* parent);
     ~ImageViewer();
-    void setImage(Image* image);
-    Image* getImage() const;
-    ControlsOverlay* getControls();
+    Image* getCurrentImage() const;
     bool isDisplaying();
-
-    void centerVertical();
-    void centerHorizontal();
-
-    void scaleImage();
-    float scale() const;
-    bool scaled() const;
-    void smoothScale();
-    QImage halfSized(const QImage &source);
-
-    Image* img;
-    QTimer animationTimer;
-    QImageReader imageReader;
-    QImage image, imageScaled;
-    QPoint moveStartPos;
-    QRectF drawingRect;
-    QSize shrinkSize;
-    MapOverlay *mapOverlay;
-    InfoOverlay *infoOverlay;
-    ControlsOverlay *controlsOverlay;
-    QFuture<void> scalerThread;
-    ImageViewer* q;
-    QMutex mutex;
-    uint lock;
-
-    WindowResizePolicy resizePolicy;
-
-    int freeSpaceLeft;
-    int freeSpaceBottom;
-    int freeSpaceRight;
-    int freeSpaceTop;
-
-    bool isDisplayingFlag;
-
-    float maxScale = 0.50; //fix this crap.
-    static const float defaultMaxSale = 0.50;
-    static const float minScale = 3.0;
-    static const float zoomStep = 0.1;
-
-    void stopAnimation();
-    void startAnimation();
-    void unsetImage();
 
 signals:
     void sendDoubleClick();
     void imageChanged();
 
 public slots:
+    void setImage(Image* image);
+    void unsetImage();
     void slotFitNormal();
     void slotFitWidth();
     void slotFitAll();
     void slotZoomIn();
     void slotZoomOut();
-    void slotSetInfoString(QString);
-    void slotShowInfo(bool);
-    void slotShowControls(bool);
 
 private slots:
     void onAnimation();
@@ -114,22 +65,42 @@ protected:
     virtual void mouseDoubleClickEvent(QMouseEvent *event);
 
 private:
+    Image* currentImage;
+    QImage image;
+    QTimer animationTimer;
+    QRectF drawingRect;
+    QPoint mouseMoveStartPos;
+
+    MapOverlay *mapOverlay;
+
+    bool isDisplayingFlag;
+    bool errorFlag;
+
+    float currentScale;
+    float maxScale = 0.50;
+    static const float defaultMaxScale = 0.50;
+    static const float minScale = 5.0;
+    static const float scaleStep = 0.1;
+    QPointF fixedZoomPoint;
+
+    ImageFitMode imageFitMode;
+    void initMap();
+    void setScale(float scale);
+    void calculateMaxScale();
+    void scaleAround(QPointF p, float oldScale);
     void fitDefault();
     void fitNormal();
     void fitWidth();
     void fitAll();
-    void setScale(float scale);
+    void imageAlign();
     void centerImage();
     void updateMap();
-    float currentScale;
-    void initOverlays();
-    QPointF zoomPoint;
-    bool errorFlag;
-    void imageAlign();
     void fixAlignHorizontal();
     void fixAlignVertical();
-    void scaleAround(QPointF p, float oldScale);
-    void calculateMaxScale();
+    float scale() const;
+    bool scaled() const;
+    void stopAnimation();
+    void startAnimation();
 };
 
 #endif // IMAGEVIEWER_H

@@ -4,11 +4,7 @@
 #include <QObject>
 #include <QWidget>
 #include <QFileDialog>
-#include "mainwindow.h"
-#include "imageviewer.h"
 #include "directorymanager.h"
-#include "opendialog.h"
-#include "settingsdialog.h"
 #include "imageloader.h"
 #include "settings.h"
 
@@ -17,32 +13,30 @@ class Core : public QObject
     Q_OBJECT
 public:
     explicit Core();
-    ImageViewer *imageViewer;
     DirectoryManager *dirManager;
-    void connectGui(MainWindow*);
     void open(QString);
 
 private:
     void initVariables();
     void connectSlots();
-    MainWindow *mainWindow;
-    OpenDialog *openDialog;
-    SettingsDialog *settingsDialog;
-    ImageLoader *imgLoader;
+    ImageLoader *imageLoader;
+    Image* currentImage;
 
 private slots:
     void setInfoString();
 
 signals:
+    void signalUnsetImage();
+    void signalSetImage(Image*);
+    void infoStringChanged(QString);
 
 public slots:
+    void loadImage(QString);
     void initSettings();
     void slotNextImage();
     void slotPrevImage();
     void setCurrentDir(QString);
     //from gui
-    void showOpenDialog();
-    void showSettingsDialog();
     void reconfigure();
 };
 

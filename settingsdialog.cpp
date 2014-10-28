@@ -34,8 +34,10 @@ void SettingsDialog::readSettings() {
 }
 
 void SettingsDialog::writeSettings() {
-    globalSettings->s.setValue("cacheSize", ui->cacheSlider->value());
-    globalSettings->s.setValue("defaultFitMode",ui->fitModeComboBox->currentText());
+    globalSettings->s.setValue("cacheSize",
+                               ui->cacheSlider->value());
+    globalSettings->s.setValue("defaultFitMode",
+                               ui->fitModeComboBox->currentText());
     emit settingsChanged();
     this->close();
 }
