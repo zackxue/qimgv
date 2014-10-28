@@ -29,6 +29,7 @@ signals:
     void signalUnsetImage();
     void signalSetImage(Image*);
     void infoStringChanged(QString);
+    void slowLoading();
 
 public slots:
     void loadImage(QString);

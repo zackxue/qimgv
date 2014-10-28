@@ -11,7 +11,7 @@ class ImageCache
 public:
     ImageCache();
     ~ImageCache();
-    Image* findImagePointer(Image* image);
+    Image* findImage(Image* image);
     bool imageIsCached(Image*);
     bool pushImage(Image*, bool);
     qint64 cacheSize() const;

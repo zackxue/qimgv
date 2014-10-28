@@ -45,8 +45,8 @@ signals:
     void imageChanged();
 
 public slots:
-    void setImage(Image* image);
-    void unsetImage();
+    void displayImage(Image* image);
+    void freeImage();
     void slotFitNormal();
     void slotFitWidth();
     void slotFitAll();

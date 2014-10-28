@@ -52,13 +52,13 @@ void ImageViewer::startAnimation() {
 }
 
 
-void ImageViewer::unsetImage() {
+void ImageViewer::freeImage() {
     if (currentImage!=NULL) {
         stopAnimation();
         currentImage->setInUse(false);
     }
 }
-void ImageViewer::setImage(Image* i) {
+void ImageViewer::displayImage(Image* i) {
     currentImage = i;
     if(i->getType()==NONE) {
         //empty or corrupted image

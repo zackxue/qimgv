@@ -12,16 +12,14 @@ Core::Core() :
 
 void Core::initVariables() {
     dirManager = new DirectoryManager();
-    imageLoader = new ImageLoader(dirManager);
+    imageLoader = new ImageLoader();
 }
 
 // misc connections not related to gui
 void Core::connectSlots() {
-
 }
 
 void Core::initSettings() {
-    imageLoader->readSettings();
 }
 
 // do not call before connecting gui
@@ -53,21 +51,25 @@ void Core::setCurrentDir(QString path) {
 
 void Core::slotNextImage() {
     emit signalUnsetImage();
-    currentImage = imageLoader->loadNext();
+    currentImage = imageLoader->load(dirManager->next());
     emit signalSetImage(currentImage);
+    imageLoader->preload(dirManager->peekNext());
     setInfoString();
 }
 
 void Core::slotPrevImage() {
     emit signalUnsetImage();
-    currentImage = imageLoader->loadPrev();
+    currentImage = imageLoader->load(dirManager->prev());
     emit signalSetImage(currentImage);
+    imageLoader->preload(dirManager->peekPrev());
     setInfoString();
 }
 
-void Core::loadImage(QString filePath) {
+void Core::loadImage(QString path) {
     emit signalUnsetImage();
-    currentImage = imageLoader->load(filePath);
+    currentImage = imageLoader->load(dirManager->setFile(path));
     emit signalSetImage(currentImage);
+    imageLoader->preload(dirManager->peekNext());
+    imageLoader->preload(dirManager->peekPrev());
     setInfoString();
 }

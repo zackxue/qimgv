@@ -31,6 +31,7 @@ public slots:
     void slotMinimize();
     void slotAbout();
     void setInfoString(QString);
+    void readSettings();
 
 signals:
     void signalFitAll();
@@ -46,7 +47,6 @@ signals:
 public:
     MainWindow();
     ~MainWindow();    
-    void readSettings();
     ImageViewer *imageViewer;
     SettingsDialog *settingsDialog;
 
@@ -61,7 +61,7 @@ private slots:
     void slotShowInfo(bool x);
 private:
     Core *core;
-    InfoOverlay *infoOverlay;
+    textOverlay *infoOverlay, *messageOverlay;
     ControlsOverlay *controlsOverlay;
     void init();
     void createActions();

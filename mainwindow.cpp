@@ -16,12 +16,18 @@ MainWindow::MainWindow() :
 void MainWindow::init() {
     settingsDialog = new SettingsDialog();
     imageViewer = new ImageViewer(this);
-    infoOverlay = new InfoOverlay(imageViewer);
     controlsOverlay = new ControlsOverlay(imageViewer);
+    infoOverlay = new textOverlay(imageViewer, TOP);
+    //messageOverlay = new textOverlay(imageViewer, BOTTOM);
+    //messageOverlay->setText("Loading...");
     infoOverlay->hide();
+    //messageOverlay->hide();
     controlsOverlay->hide();
     this->setCentralWidget(imageViewer);
     core = new Core();
+
+    createActions();
+    createMenus();
 
     connect(this, SIGNAL(signalNextImage()),
             core, SLOT(slotNextImage()));
@@ -34,6 +40,9 @@ void MainWindow::init() {
 
     connect(settingsDialog, SIGNAL(settingsChanged()),
             core, SLOT(reconfigure()));
+
+    connect(settingsDialog, SIGNAL(settingsChanged()),
+            this, SLOT(readSettings()));
 
     connect(this, SIGNAL(signalFitAll()),
             imageViewer, SLOT(slotFitAll()));
@@ -53,6 +62,9 @@ void MainWindow::init() {
     connect(imageViewer, SIGNAL(sendDoubleClick()),
             this, SLOT(slotTriggerFullscreen()));
 
+   // connect(imageViewer, SIGNAL(imageChanged()),
+   //         messageOverlay, SLOT(hide()));
+
     connect(this, SIGNAL(signalFullscreenEnabled(bool)),
             this, SLOT(slotShowControls(bool)));
 
@@ -63,10 +75,10 @@ void MainWindow::init() {
             this, SLOT(setInfoString(QString)));
 
     connect(core, SIGNAL(signalUnsetImage()),
-            imageViewer, SLOT(unsetImage()));
+            imageViewer, SLOT(freeImage()));
 
     connect(core, SIGNAL(signalSetImage(Image*)),
-            imageViewer, SLOT(setImage(Image*)));
+            imageViewer, SLOT(displayImage(Image*)));
 
     connect(controlsOverlay, SIGNAL(exitClicked()),
             this, SLOT(close()));
@@ -76,9 +88,6 @@ void MainWindow::init() {
 
     connect(controlsOverlay, SIGNAL(minimizeClicked()),
             this, SLOT(slotMinimize()));
-
-    createActions();
-    createMenus();
 }
 
 void MainWindow::readSettings() {
@@ -296,7 +305,7 @@ void MainWindow::slotSetInfoString(QString info) {
 
 void MainWindow::resizeEvent(QResizeEvent* event) {
     controlsOverlay->updateSize();
-    infoOverlay->updateSize();
+    infoOverlay->updateWidth();
 }
 
 void MainWindow::wheelEvent(QWheelEvent *event)
