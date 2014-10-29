@@ -1,56 +1,97 @@
 #include "imageloader.h"
 
-ImageLoader::ImageLoader() {
+ImageLoader::ImageLoader(DirectoryManager *_dm) {
     cache = new ImageCache();
+    dm = _dm;
+    connect(this, SIGNAL(startPreload()),
+            this, SLOT(preloadNearest()));
 }
 
-//thread-safe
-Image* ImageLoader::load(FileInfo* file) {
+void ImageLoader::load(QString path) {
+    load(dm->setFile(path));
+}
+
+void ImageLoader::load(FileInfo* file) {
     Image *img = new Image(file);
-    QFuture<Image*> future = QtConcurrent::run(this,
-                                               &ImageLoader::load_thread,
-                                               img);
-    return future.result();
+    setCurrentImg(img);
+    QtConcurrent::run(this, &ImageLoader::load_thread, img);
+}
+
+void ImageLoader::loadNext()
+{
+    load(dm->next());
+}
+
+void ImageLoader::loadPrev()
+{
+    load(dm->prev());
 }
 
 Image* ImageLoader::load_thread(Image*& img)
 {
-    lock();
-    Image* found = cache->findImage(img);
-    if(!found) {
-        img->loadImage();
-        cache->cacheImageForced(img);
+    QThread::msleep(50);
+    if(isCurrent(img)) {
+        mutex2.lock();
+        qDebug() << "loadStart: " << img->getName();
+        Image* found = cache->findImage(img);
+        if(!found) {
+            img->loadImage();
+            cache->cacheImageForced(img);
+        }
+        else {
+            delete img;
+            img = found;
+        }
+        img->setInUse(true);
+        mutex2.unlock();
+        emit startPreload();
+        emit loadFinished(img);
     }
-    else {
-        delete img;
-        img = found;
-    }
-    img->setInUse(true);
-    img->moveToThread(this->thread()); // important
-    unlock();
-    return img;
 }
 
-//thread-safe
+void ImageLoader::preloadNearest() {
+    preload(dm->peekNext());
+    preload(dm->peekPrev());
+}
+
 void ImageLoader::preload(FileInfo *file) {
     Image* img = new Image(file);
-    QtConcurrent::run(this, &ImageLoader::preload_thread, img);
+    if(!cache->findImage(img)) { // not found; preloading
+        QtConcurrent::run(this, &ImageLoader::preload_thread, img);
+    }
 }
 
 void ImageLoader::preload_thread(Image* img) {
     lock();
-    if (!cache->findImage(img))
-    {
-        img->loadImage();
-        if(!cache->cacheImageForced(img)) {
-            delete img;
-            img = NULL;
-        }
-        else {
-            img->moveToThread(this->thread()); // important
-        }
+    qDebug() << "PreloadStart: " << img->getName();
+    img->loadImage();
+    if(!cache->cacheImageForced(img)) {
+        delete img;
+        img = NULL;
+    }
+    else {
+        img->moveToThread(this->thread()); // important
     }
     unlock();
+}
+
+Image *ImageLoader::getCurrentImg() const
+{
+    return currentImg;
+}
+
+void ImageLoader::setCurrentImg(Image *value)
+{
+    lock();
+    currentImg = value;
+    unlock();
+}
+
+bool ImageLoader::isCurrent(Image* img) {
+    lock();
+    bool flag = (img == currentImg);
+    unlock();
+    return flag;
 }
 
 void ImageLoader::readSettings() {

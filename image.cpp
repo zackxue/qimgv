@@ -31,9 +31,9 @@ void Image::loadImage()
             info->setWidth(movie->currentImage().width());
         }
         else if(getType() == STATIC) {
-            QImage *tmp = new QImage(path); // possibly created in worker thread
-            *image = tmp->convertToFormat(QImage::Format_ARGB32_Premultiplied);
-            delete tmp;
+       //     QImage *tmp = new QImage(path); // possibly created in worker thread
+            image = new QImage(path);//tmp->convertToFormat(QImage::Format_ARGB32_Premultiplied);
+            //delete tmp;
             aspectRatio = (float)image->height()/
                     image->width();
             info->setHeight(image->height());

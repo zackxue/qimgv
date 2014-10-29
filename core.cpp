@@ -12,11 +12,13 @@ Core::Core() :
 
 void Core::initVariables() {
     dirManager = new DirectoryManager();
-    imageLoader = new ImageLoader();
+    imageLoader = new ImageLoader(dirManager);
 }
 
 // misc connections not related to gui
 void Core::connectSlots() {
+    connect(imageLoader, SIGNAL(loadFinished(Image*)),
+            this, SLOT(onLoadFinished(Image*)));
 }
 
 void Core::initSettings() {
@@ -31,17 +33,23 @@ void Core::reconfigure() {
 
 void Core::setInfoString() {
     QString infoString = "";
-    infoString.append(currentImage->getInfo()->getName() + "  ");
-    infoString.append("(" +
-                      QString::number(currentImage->getInfo()->getWidth()) +
-                      "x" +
-                      QString::number(currentImage->getInfo()->getHeight()) +
-                      ")  ");
-    infoString.append("[ " +
+    infoString.append(" [ " +
                       QString::number(dirManager->currentPos+1) +
                       "/" +
                       QString::number(dirManager->fileList.length()) +
-                      " ]");
+                      " ]   ");
+    if(currentImage) {
+        infoString.append(currentImage->getInfo()->getName() + "  ");
+        infoString.append("(" +
+                          QString::number(currentImage->getInfo()->getWidth()) +
+                          "x" +
+                          QString::number(currentImage->getInfo()->getHeight()) +
+                          ")  ");
+    }
+    else {
+        infoString.append("Loading...");
+    }
+
     emit infoStringChanged(infoString);
 }
 
@@ -50,26 +58,29 @@ void Core::setCurrentDir(QString path) {
 }
 
 void Core::slotNextImage() {
-    emit signalUnsetImage();
-    currentImage = imageLoader->load(dirManager->next());
-    emit signalSetImage(currentImage);
-    imageLoader->preload(dirManager->peekNext());
+    currentImage = NULL;
+    FileInfo* f = dirManager->next();
     setInfoString();
+    imageLoader->load(f);
 }
 
 void Core::slotPrevImage() {
-    emit signalUnsetImage();
-    currentImage = imageLoader->load(dirManager->prev());
-    emit signalSetImage(currentImage);
-    imageLoader->preload(dirManager->peekPrev());
+    currentImage = NULL;
+    FileInfo* f = dirManager->prev();
     setInfoString();
+    imageLoader->load(f);
 }
 
 void Core::loadImage(QString path) {
+    currentImage = NULL;
+    FileInfo* f = dirManager->next();
+    setInfoString();
+    imageLoader->load(path);
+}
+
+void Core::onLoadFinished(Image* img) {
     emit signalUnsetImage();
-    currentImage = imageLoader->load(dirManager->setFile(path));
+    currentImage = img;
     emit signalSetImage(currentImage);
-    imageLoader->preload(dirManager->peekNext());
-    imageLoader->preload(dirManager->peekPrev());
     setInfoString();
 }

@@ -13,18 +13,19 @@ class Core : public QObject
     Q_OBJECT
 public:
     explicit Core();
-    DirectoryManager *dirManager;
     void open(QString);
 
 private:
     void initVariables();
     void connectSlots();
     ImageLoader *imageLoader;
+    DirectoryManager *dirManager;
     Image* currentImage;
 
 private slots:
     void setInfoString();
 
+    void onLoadFinished(Image *img);
 signals:
     void signalUnsetImage();
     void signalSetImage(Image*);

@@ -38,9 +38,9 @@ bool ImageCache::cacheImageForced(Image* image) {
 }
 
 bool ImageCache::pushImage(Image* image, bool forced) {
+    lock();
     float imageMBytes = (float) image->ramSize();
     shrinkTo(maxCacheSize - imageMBytes);
-    lock();
     if(forced || (!forced && cacheSize() <= maxCacheSize - imageMBytes ||
                   cachedImages.count() == 0)) {
         cachedImages.push_front(image);
@@ -70,23 +70,11 @@ void ImageCache::applySettings() {
 
 // delete images until cache size is less than MB
 void ImageCache::shrinkTo(int MB) {
-    lock();
-    while (cacheSize() > MB && cachedImages.length() > 1) // wipes previous
-    //while (cacheSize() > MB && cachedImages.length() > 2) // leaves previous
-    {
-        if(!cachedImages.last()->isInUse()) {
-            delete cachedImages.last();
-            cachedImages.removeLast();
-        }
-        else {
-            break;
-        }
-    }
-
-    while (cacheSize() > MB && cachedImages.length() > 1) // wipes previous
-    //while (cacheSize() > MB && cachedImages.length() > 2) // leaves previous
+    //while (cacheSize() > MB && cachedImages.length() > 1) // wipes previous
+   while (cacheSize() > MB && cachedImages.length() > 2) // leaves previous
     {
         if(!cachedImages.first()->isInUse()) {
+            qDebug() << "CACHE: deleting " << cachedImages.first()->getName();
             delete cachedImages.first();
             cachedImages.removeFirst();
         }
@@ -94,7 +82,19 @@ void ImageCache::shrinkTo(int MB) {
             break;
         }
     }
-    unlock();
+
+    //while (cacheSize() > MB && cachedImages.length() > 1) // wipes previous
+    while (cacheSize() > MB && cachedImages.length() > 2) // leaves previous
+    {
+        if(!cachedImages.last()->isInUse()) {
+            qDebug() << "CACHE: deleting " << cachedImages.last()->getName();
+            delete cachedImages.last();
+            cachedImages.removeLast();
+        }
+        else {
+            break;
+        }
+    }
 }
 
 void ImageCache::lock() {
@@ -109,7 +109,6 @@ ImageCache::~ImageCache()
 {
 
 }
-
 
 // NOT thread-safe
 qint64 ImageCache::cacheSize() const

@@ -18,7 +18,7 @@ class Image : public QObject
 public:
     Image(FileInfo*);
     ~Image();
-    
+
     QImage* getImage();
     QMovie* getMovie();
     int getType();
