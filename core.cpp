@@ -17,6 +17,8 @@ void Core::initVariables() {
 
 // misc connections not related to gui
 void Core::connectSlots() {
+    connect(imageLoader, SIGNAL(loadStarted()),
+            this, SLOT(updateInfoString()));
     connect(imageLoader, SIGNAL(loadFinished(Image*)),
             this, SLOT(onLoadFinished(Image*)));
 }
@@ -31,7 +33,7 @@ void Core::reconfigure() {
    // mainWindow->readSettings();
 }
 
-void Core::setInfoString() {
+void Core::updateInfoString() {
     QString infoString = "";
     infoString.append(" [ " +
                       QString::number(dirManager->currentPos+1) +
@@ -46,9 +48,6 @@ void Core::setInfoString() {
                           QString::number(currentImage->getInfo()->getHeight()) +
                           ")  ");
     }
-    else {
-        infoString.append("Loading...");
-    }
 
     emit infoStringChanged(infoString);
 }
@@ -60,27 +59,25 @@ void Core::setCurrentDir(QString path) {
 void Core::slotNextImage() {
     currentImage = NULL;
     FileInfo* f = dirManager->next();
-    setInfoString();
     imageLoader->load(f);
 }
 
 void Core::slotPrevImage() {
     currentImage = NULL;
     FileInfo* f = dirManager->prev();
-    setInfoString();
     imageLoader->load(f);
 }
 
 void Core::loadImage(QString path) {
-    currentImage = NULL;
-    FileInfo* f = dirManager->next();
-    setInfoString();
-    imageLoader->load(path);
+    if(!path.isEmpty()) {
+        currentImage = NULL;
+        imageLoader->load(path);
+    }
 }
 
 void Core::onLoadFinished(Image* img) {
     emit signalUnsetImage();
     currentImage = img;
     emit signalSetImage(currentImage);
-    setInfoString();
+    updateInfoString();
 }

@@ -37,6 +37,7 @@ private:
 
     bool isCurrent(Image *img);
 signals:
+    void loadStarted();
     void loadFinished(Image*);
     void startPreload();
 

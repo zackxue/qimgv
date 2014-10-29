@@ -50,6 +50,7 @@ public:
     ImageViewer *imageViewer;
     SettingsDialog *settingsDialog;
 
+    void open(QString path);
 private slots:
     void slotOpenDialog();
     void slotFitAll();

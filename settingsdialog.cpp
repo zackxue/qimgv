@@ -16,6 +16,8 @@ void SettingsDialog::readSettings() {
     QString tmp;
 
     // ##### cache #####
+    ui->preloaderCheckBox->setChecked(
+                globalSettings->s.value("usePreloader", "true").toBool());
     ui->cacheSlider->setValue(
                 globalSettings->s.value("cacheSize",64).toInt());
     ui->cacheLabel2->setNum(ui->cacheSlider->value());
@@ -34,6 +36,8 @@ void SettingsDialog::readSettings() {
 }
 
 void SettingsDialog::writeSettings() {
+    globalSettings->s.setValue("usePreloader",
+                            ui->preloaderCheckBox->isChecked());
     globalSettings->s.setValue("cacheSize",
                                ui->cacheSlider->value());
     globalSettings->s.setValue("defaultFitMode",

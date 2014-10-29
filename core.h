@@ -23,7 +23,7 @@ private:
     Image* currentImage;
 
 private slots:
-    void setInfoString();
+    void updateInfoString();
 
     void onLoadFinished(Image *img);
 signals:

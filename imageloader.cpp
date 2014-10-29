@@ -3,8 +3,7 @@
 ImageLoader::ImageLoader(DirectoryManager *_dm) {
     cache = new ImageCache();
     dm = _dm;
-    connect(this, SIGNAL(startPreload()),
-            this, SLOT(preloadNearest()));
+    readSettings();
 }
 
 void ImageLoader::load(QString path) {
@@ -29,6 +28,7 @@ void ImageLoader::loadPrev()
 
 Image* ImageLoader::load_thread(Image*& img)
 {
+    emit loadStarted();
     QThread::msleep(50);
     if(isCurrent(img)) {
         mutex2.lock();
@@ -96,6 +96,14 @@ bool ImageLoader::isCurrent(Image* img) {
 
 void ImageLoader::readSettings() {
     cache->applySettings();
+    if(globalSettings->s.value("usePreloader", true).toBool()) {
+        connect(this, SIGNAL(startPreload()),
+                this, SLOT(preloadNearest()));
+    }
+    else {
+        disconnect(this, SIGNAL(startPreload()),
+                   this, SLOT(preloadNearest()));
+    }
 }
 
 void ImageLoader::lock()

@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
         fileName.replace("\\\\","/");
         fileName.replace("\\","/");
         mw.slotTriggerFullscreen();
-//        c->loadImage(fileName);
+        mw.open(fileName);
     }
     mw.show();
 

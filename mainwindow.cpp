@@ -90,6 +90,10 @@ void MainWindow::init() {
             this, SLOT(slotMinimize()));
 }
 
+void MainWindow::open(QString path) {
+    core->loadImage(path);
+}
+
 void MainWindow::readSettings() {
     QString fitMode =
             globalSettings->s.value("defaultFitMode", "ALL").toString();
