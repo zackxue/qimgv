@@ -3,7 +3,10 @@
 ImageLoader::ImageLoader(DirectoryManager *_dm) {
     cache = new ImageCache();
     dm = _dm;
+    loadDelayEnabled = false;
     readSettings();
+    connect(globalSettings, SIGNAL(settingsChanged()),
+            this, SLOT(readSettings()));
 }
 
 void ImageLoader::load(QString path) {
@@ -26,10 +29,10 @@ void ImageLoader::loadPrev()
     load(dm->prev());
 }
 
-Image* ImageLoader::load_thread(Image*& img)
+void ImageLoader::load_thread(Image* img)
 {
     emit loadStarted();
-    QThread::msleep(50);
+    if(loadDelayEnabled) QThread::msleep(35);
     if(isCurrent(img)) {
         mutex2.lock();
         qDebug() << "loadStart: " << img->getName();
@@ -95,7 +98,7 @@ bool ImageLoader::isCurrent(Image* img) {
 }
 
 void ImageLoader::readSettings() {
-    cache->applySettings();
+    loadDelayEnabled = globalSettings->s.value("loadDelay", "false").toBool();
     if(globalSettings->s.value("usePreloader", true).toBool()) {
         connect(this, SIGNAL(startPreload()),
                 this, SLOT(preloadNearest()));

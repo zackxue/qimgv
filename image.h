@@ -40,7 +40,6 @@ public:
     void setInUse(bool);
 
 private:
-    QString mPath;
     QImage* image;
     QMovie* movie;
     FileInfo* info;

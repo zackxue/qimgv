@@ -6,6 +6,7 @@ MainWindow::MainWindow() :
 {
     init();
     resize(800, 650);
+    readSettings();
     setMinimumSize(QSize(400,300));
     setWindowTitle(QCoreApplication::applicationName() +
                    " " +
@@ -29,6 +30,9 @@ void MainWindow::init() {
     createActions();
     createMenus();
 
+    connect(globalSettings, SIGNAL(settingsChanged()),
+            this, SLOT(readSettings()));
+
     connect(this, SIGNAL(signalNextImage()),
             core, SLOT(slotNextImage()));
 
@@ -37,12 +41,6 @@ void MainWindow::init() {
 
     connect(this, SIGNAL(fileOpened(QString)),
             core, SLOT(loadImage(QString)));
-
-    connect(settingsDialog, SIGNAL(settingsChanged()),
-            core, SLOT(reconfigure()));
-
-    connect(settingsDialog, SIGNAL(settingsChanged()),
-            this, SLOT(readSettings()));
 
     connect(this, SIGNAL(signalFitAll()),
             imageViewer, SLOT(slotFitAll()));

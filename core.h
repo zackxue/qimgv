@@ -24,8 +24,8 @@ private:
 
 private slots:
     void updateInfoString();
-
     void onLoadFinished(Image *img);
+
 signals:
     void signalUnsetImage();
     void signalSetImage(Image*);
@@ -38,8 +38,7 @@ public slots:
     void slotNextImage();
     void slotPrevImage();
     void setCurrentDir(QString);
-    //from gui
-    void reconfigure();
+
 };
 
 #endif // CORE_H

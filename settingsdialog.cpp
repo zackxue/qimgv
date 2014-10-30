@@ -9,15 +9,20 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     ui->setupUi(this);
     this->setWindowTitle(tr("Settings"));
     setWindowIcon(QIcon(":/images/res/pepper32.png"));
+    connect(this, SIGNAL(settingsChanged()),
+            globalSettings, SLOT(sendChangeNotification()));
     readSettings();
 }
 
 void SettingsDialog::readSettings() {
     QString tmp;
-
-    // ##### cache #####
+    // ##### loader #####
     ui->preloaderCheckBox->setChecked(
                 globalSettings->s.value("usePreloader", "true").toBool());
+    ui->loadDelayCheckBox->setChecked(
+                globalSettings->s.value("loadDelay", "false").toBool());
+
+    // ##### cache #####
     ui->cacheSlider->setValue(
                 globalSettings->s.value("cacheSize",64).toInt());
     ui->cacheLabel2->setNum(ui->cacheSlider->value());
@@ -38,6 +43,8 @@ void SettingsDialog::readSettings() {
 void SettingsDialog::writeSettings() {
     globalSettings->s.setValue("usePreloader",
                             ui->preloaderCheckBox->isChecked());
+    globalSettings->s.setValue("loadDelay",
+                            ui->loadDelayCheckBox->isChecked());
     globalSettings->s.setValue("cacheSize",
                                ui->cacheSlider->value());
     globalSettings->s.setValue("defaultFitMode",

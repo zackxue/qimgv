@@ -6,8 +6,9 @@
 #include <QVector>
 #include <QMutex>
 
-class ImageCache
+class ImageCache : public QObject
 {
+    Q_OBJECT
 public:
     ImageCache();
     ~ImageCache();
@@ -15,7 +16,6 @@ public:
     bool imageIsCached(Image*);
     bool pushImage(Image*, bool);
     qint64 cacheSize() const;
-    void applySettings();
     bool isFull();
     bool cacheImage(Image *image);
     bool cacheImageForced(Image *image);
@@ -27,6 +27,8 @@ private:
     uint maxCacheSize;
     QMutex mutex;
     void readSettings();
+private slots:
+    void applySettings();
 };
 
 #endif // IMAGECACHE_H

@@ -15,8 +15,10 @@ private:
     explicit Settings(QObject *parent = 0);
 
 signals:
+    void settingsChanged();
 
 public slots:
+    void sendChangeNotification();
 
 };
 

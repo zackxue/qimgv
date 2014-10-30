@@ -26,13 +26,6 @@ void Core::connectSlots() {
 void Core::initSettings() {
 }
 
-// do not call before connecting gui
-// because muh architecture
-void Core::reconfigure() {
-    imageLoader->readSettings();
-   // mainWindow->readSettings();
-}
-
 void Core::updateInfoString() {
     QString infoString = "";
     infoString.append(" [ " +

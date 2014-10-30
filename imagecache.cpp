@@ -2,6 +2,8 @@
 
 ImageCache::ImageCache() {
     applySettings();
+    connect(globalSettings, SIGNAL(settingsChanged()),
+            this, SLOT(applySettings()));
 }
 
 Image* ImageCache::findImage(Image* image)
