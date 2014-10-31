@@ -294,7 +294,8 @@ void ImageViewer::resizeEvent(QResizeEvent* event) {
 
 void ImageViewer::mouseDoubleClickEvent(QMouseEvent *event) {
     if(event->button() == Qt::RightButton) {
-        slotFitNormal();
+        emit sendRightDoubleClick();
+        //slotFitNormal();
     }
     else {
         emit sendDoubleClick();

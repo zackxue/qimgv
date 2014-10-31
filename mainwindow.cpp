@@ -51,6 +51,9 @@ void MainWindow::init() {
     connect(this, SIGNAL(signalFitNormal()),
             imageViewer, SLOT(slotFitNormal()));
 
+    connect(imageViewer, SIGNAL(sendRightDoubleClick()),
+            this, SLOT(switchFitMode()));
+
     connect(this, SIGNAL(signalZoomIn()),
             imageViewer, SLOT(slotZoomIn()));
 
@@ -289,7 +292,7 @@ void MainWindow::slotMinimize()
     this->setWindowState(Qt::WindowMinimized);
 }
 
-void MainWindow::spaceSwitchFitMode() {
+void MainWindow::switchFitMode() {
     if(modeFitAll->isChecked()) {
         this->slotFitNormal();
     }
@@ -325,7 +328,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event)
     QMainWindow::keyPressEvent(event);
     if (event->key() == Qt::Key_Space)
     {
-        spaceSwitchFitMode();
+        switchFitMode();
     }
 }
 

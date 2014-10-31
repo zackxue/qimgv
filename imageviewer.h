@@ -42,6 +42,7 @@ public:
 
 signals:
     void sendDoubleClick();
+    void sendRightDoubleClick();
     void imageChanged();
 
 public slots:

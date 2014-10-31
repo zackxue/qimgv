@@ -56,6 +56,7 @@ private slots:
     void slotFitAll();
     void slotFitWidth();
     void slotFitNormal();
+    void switchFitMode();
     void slotSetInfoString(QString info);
 
     void slotShowControls(bool);
@@ -68,7 +69,6 @@ private:
     void createActions();
     void createMenus();
     void keyPressEvent(QKeyEvent *event);
-    void spaceSwitchFitMode();
     
     QAction *openAct;
     QAction *settingsAct;

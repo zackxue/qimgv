@@ -82,7 +82,7 @@ FileInfo* DirectoryManager::loadInfo(QString path) {
 FileInfo* DirectoryManager::setFile(QString path) {
     FileInfo *info = loadInfo(path);
     setCurrentDir(info->getDirPath());
-    currentPos = info->getCurrentPos();
+    currentPos = fileList.indexOf(info->getName());
     globalSettings->s.setValue("lastPosition", currentPos);
     return info;
 }
