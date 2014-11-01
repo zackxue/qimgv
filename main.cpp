@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setOrganizationName("greenpepper software");
     QCoreApplication::setOrganizationDomain("nosite.com");
     QCoreApplication::setApplicationName("qimgv");
-    QCoreApplication::setApplicationVersion("0.28dev");
+    QCoreApplication::setApplicationVersion("0.28RC");
 
     globalSettings = Settings::getInstance();
     atexit(saveSettings);

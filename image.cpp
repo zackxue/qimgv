@@ -38,6 +38,7 @@ void Image::loadImage()
                     image->width();
             info->setHeight(image->height());
             info->setWidth(image->width());
+            qDebug() << "FORMAT: " << image->format();
         }
         info->inUse = true;
     }
