@@ -36,13 +36,14 @@ MapOverlay::MapOverlay(QWidget *parent) : QWidget(parent),
 
 void MapOverlay::paintEvent(QPaintEvent *event) {
     QPainter painter(this);
-    painter.setPen(QPen(QColor(20,20,20,150)));
+    painter.setRenderHint(QPainter::Antialiasing, false);
+    painter.setPen(QPen(QColor(40,40,40,255)));
     painter.fillRect(d->outerRect,
                      QBrush(QColor(80,80,80,150),
                             Qt::SolidPattern));
     painter.drawRect(d->outerRect);
     painter.fillRect(d->innerRect,
-                     QBrush(QColor(190,190,190,150),
+                     QBrush(QColor(160,160,160,150),
                             Qt::SolidPattern));
     painter.drawRect(d->innerRect);
 }
